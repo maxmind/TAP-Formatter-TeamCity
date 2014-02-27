@@ -1,0 +1,6 @@
+##teamcity[testSuiteStarted name='t/test-data/simple-ok/input.st']
+##teamcity[testStarted name='simple-ok-msg']
+ok 1 - simple-ok-msg
+1..1
+##teamcity[testFinished name='simple-ok-msg']
+##teamcity[testSuiteFinished name='t/test-data/simple-ok/input.st']
