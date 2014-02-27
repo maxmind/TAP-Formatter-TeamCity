@@ -1,4 +1,2 @@
-##teamcity[testStarted name='t/test-data/simple-ok/input.st.simple-ok-msg']
-ok 1 - simple-ok-msg
-1..1
-##teamcity[testFinished name='t/test-data/simple-ok/input.st.simple-ok-msg']
+##teamcity[testStarted name='t.test-data.simple-ok.input.st.simple-ok-msg']
+##teamcity[testFinished name='t.test-data.simple-ok.input.st.simple-ok-msg']

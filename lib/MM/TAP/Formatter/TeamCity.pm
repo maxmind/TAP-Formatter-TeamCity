@@ -34,7 +34,6 @@ sub open_test {
     );
 
     push @SuiteNameStack, $test;
-#    teamcity_emit_build_message('testSuiteStarted', name => $test);
 
 
     while ( defined( my $result = $parser->next() ) ) {
@@ -45,7 +44,6 @@ sub open_test {
     $self->_test_finished();
     
     pop @SuiteNameStack;
-#    teamcity_emit_build_message('testSuiteFinished', name => $test);
 
     return $session;
 }
@@ -58,7 +56,6 @@ sub _handle_event {
     my $handler = "_handle_$type";
     eval { $self->$handler($result) };
     die qq{Can't handle result of type=$type: $@} if $@;
-    print $result->raw()."\n";
 }
 
 sub _handle_test {
@@ -68,8 +65,7 @@ sub _handle_test {
     my $test_name = $self->_compute_test_name($result);
 
     if (@SuiteNameStack && $test_name eq $SuiteNameStack[-1]) {
-#        my $suite_name = pop @SuiteNameStack;
-#        teamcity_emit_build_message('testSuiteFinished', name => $suite_name);
+        pop @SuiteNameStack;
         return;
     };
 
@@ -80,6 +76,7 @@ sub _handle_comment {
     my ($self, $result) = @_;
     (my $clean_comment = $result->comment()) =~ s/^\s+#/#/;
     $TestOutputBuffer .= "$clean_comment\n";
+    $self->_print_raw($result);
 }
 
 sub _handle_unknown {
@@ -89,15 +86,13 @@ sub _handle_unknown {
         $self->_test_finished();
         my $suite_name = $1;
         push @SuiteNameStack, $suite_name;
-#        teamcity_emit_build_message('testSuiteStarted', name => $suite_name);
     } elsif ($raw =~ /^\s*(not )?ok (\d+) - (.*)$/) {
         my $is_ok = !$1;
         my $test_num = $2;
         my $test_name = $3;
         $self->_test_finished();
         if (@SuiteNameStack && $test_name eq $SuiteNameStack[-1]) {
-#            my $suite_name = pop @SuiteNameStack;
-#            teamcity_emit_build_message('testSuiteFinished', name => $suite_name);
+            pop @SuiteNameStack;
         } else {
             my $ok = $is_ok? 'ok': 'not ok';
             my $result = TAP::Parser::Result::Test->new({
@@ -114,6 +109,7 @@ sub _handle_unknown {
     } elsif ($raw =~ /^\s*# /) {
         (my $clean_raw = $raw) =~ s/^\s+#/#/;
         $TestOutputBuffer .= $clean_raw if $LastTestResult;
+        $self->_print_raw($result);
     }
 }
 
@@ -153,7 +149,6 @@ sub _emit_teamcity_test_results {
         return;
     }
 
-    my %message = ();
     unless ($result->is_ok()) {
         teamcity_emit_build_message('testFailed', %name,
             message => ($result->is_ok()? 'ok': 'not ok'),
@@ -173,7 +168,14 @@ sub _compute_test_name {
 
 sub _qualify_test_name {
     my ($self, $test_name) = @_;
-    return join('.', @SuiteNameStack). ".$test_name";
+    my $namespace = join('.', @SuiteNameStack);
+    $namespace =~ s{/}{.}g;
+    return "$namespace.$test_name";
+}
+
+sub _print_raw {
+    my ($self, $result) = @_;
+    print $result->raw()."\n";
 }
 
 1;
