@@ -15,6 +15,11 @@ use base qw(TAP::Formatter::Base);
 
 our $VERSION = '0.041';
 
+my $LastTestName;
+my $LastTestResult;
+my @SuiteNameStack = ();
+my $TestOutputBuffer = q{};
+
 #-----------------------------------------------------------------------------
 
 sub open_test {
@@ -28,7 +33,9 @@ sub open_test {
         }
     );
 
-    teamcity_emit_build_message('testSuiteStarted', name => $test);
+    push @SuiteNameStack, $test;
+#    teamcity_emit_build_message('testSuiteStarted', name => $test);
+
 
     while ( defined( my $result = $parser->next() ) ) {
         $self->_handle_event($result);
@@ -36,18 +43,14 @@ sub open_test {
     }
 
     $self->_test_finished();
-
-    teamcity_emit_build_message('testSuiteFinished', name => $test);
+    
+    pop @SuiteNameStack;
+#    teamcity_emit_build_message('testSuiteFinished', name => $test);
 
     return $session;
 }
 
 #-----------------------------------------------------------------------------
-
-my $LastTestName;
-my $LastTestResult;
-my @SuiteNameStack = ();
-my $TestOutputBuffer = q{};
 
 sub _handle_event {
     my ($self , $result) = @_;
@@ -65,7 +68,8 @@ sub _handle_test {
     my $test_name = $self->_compute_test_name($result);
 
     if (@SuiteNameStack && $test_name eq $SuiteNameStack[-1]) {
-        teamcity_emit_build_message('testSuiteFinished', name => pop @SuiteNameStack);
+        my $suite_name = pop @SuiteNameStack;
+#        teamcity_emit_build_message('testSuiteFinished', name => $suite_name);
         return;
     };
 
@@ -74,7 +78,8 @@ sub _handle_test {
 
 sub _handle_comment {
     my ($self, $result) = @_;
-    $TestOutputBuffer .= $result->comment() . "\n";
+    (my $clean_comment = $result->comment()) =~ s/^\s+#/#/;
+    $TestOutputBuffer .= "$clean_comment\n";
 }
 
 sub _handle_unknown {
@@ -84,14 +89,15 @@ sub _handle_unknown {
         $self->_test_finished();
         my $suite_name = $1;
         push @SuiteNameStack, $suite_name;
-        teamcity_emit_build_message('testSuiteStarted', name => $suite_name);
+#        teamcity_emit_build_message('testSuiteStarted', name => $suite_name);
     } elsif ($raw =~ /^\s*(not )?ok (\d+) - (.*)$/) {
         my $is_ok = !$1;
         my $test_num = $2;
         my $test_name = $3;
         $self->_test_finished();
         if (@SuiteNameStack && $test_name eq $SuiteNameStack[-1]) {
-            teamcity_emit_build_message('testSuiteFinished', name => pop @SuiteNameStack);
+            my $suite_name = pop @SuiteNameStack;
+#            teamcity_emit_build_message('testSuiteFinished', name => $suite_name);
         } else {
             $self->_test_finished();
             my $ok = $is_ok? 'ok': 'not ok';
@@ -118,7 +124,8 @@ sub _handle_plan {
 sub _test_started {
     my ($self, $result) = @_;
     my $test_name = $self->_compute_test_name($result);
-    teamcity_emit_build_message('testStarted', name => $test_name);
+    my %name = (name => $self->_qualify_test_name($test_name));
+    teamcity_emit_build_message('testStarted', %name);
     $LastTestName = $test_name;
     $LastTestResult = $result;
 }
@@ -127,7 +134,8 @@ sub _test_finished {
     my ($self) = @_;
     return unless $LastTestResult;
     $self->_emit_teamcity_test_results($LastTestName, $LastTestResult);
-    teamcity_emit_build_message('testFinished', name => $LastTestName);
+    my %name = (name => $self->_qualify_test_name($LastTestName));
+    teamcity_emit_build_message('testFinished', %name);
     undef $LastTestName;
     undef $LastTestResult;
 }
@@ -138,7 +146,7 @@ sub _emit_teamcity_test_results {
     my $buffer = $TestOutputBuffer;
     $TestOutputBuffer = q{};
 
-    my %name = (name => $test_name);
+    my %name = (name => $self->_qualify_test_name($test_name));
 
     if ($result->has_todo() || $result->has_skip()) {
         teamcity_emit_build_message(
@@ -157,11 +165,16 @@ sub _emit_teamcity_test_results {
 #-----------------------------------------------------------------------------
 
 sub _compute_test_name {
-    my ($self, $result) = @_;    
+    my ($self, $result) = @_;
     my $description = $result->description();
     my $test_name = $description eq q{}? $result->explanation() : $description;
     $test_name =~ s/^-\s//;
     return $test_name;
+}
+
+sub _qualify_test_name {
+    my ($self, $test_name) = @_;
+    return join('.', @SuiteNameStack). ".$test_name";
 }
 
 1;

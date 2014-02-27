@@ -21,7 +21,6 @@ sub test_formatter {
 
     my $is_ok = !system("$prove $formatter $input > $out_file");
 
-
     # we don't want to compare the test summary, but it is a 
     # different number of lines depending on $is_ok
     # so we chomp off the correct number of lines
