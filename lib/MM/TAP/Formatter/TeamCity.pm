@@ -168,7 +168,10 @@ sub _compute_test_name {
 sub _qualify_test_name {
     my ($self, $test_name) = @_;
     my $namespace = join('.', @SuiteNameStack);
-    $namespace =~ s{/}{.}g;
+    for ($namespace) {
+        s{/}{.}g;
+        s/::/./g;
+    }
     return "$namespace.$test_name";
 }
 

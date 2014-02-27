@@ -30,7 +30,7 @@ sub test_formatter {
     my @actual = $out_file->slurp;
     pop @actual for 1..($is_ok? 3: 8);
     my $actual = join q{}, @actual;
-
+for ($actual,$expected){s/\n//g}
     is $actual, $expected, "running test in $data_dir";
 }
 
