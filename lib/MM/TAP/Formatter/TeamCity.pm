@@ -17,16 +17,17 @@ our $VERSION = '0.041';
 
 my $LastTestName;
 my $LastTestResult;
-my @SuiteNameStack = ();
+my @SuiteNameStack   = ();
 my $TestOutputBuffer = q{};
 
 #-----------------------------------------------------------------------------
 
 sub open_test {
-    my ($self, $test, $parser) = @_;
+    my ( $self, $test, $parser ) = @_;
 
     my $session = MM::TAP::Formatter::Session::TeamCity->new(
-        {   name       => $test,
+        {
+            name       => $test,
             formatter  => $self,
             parser     => $parser,
             show_count => 0,
@@ -41,7 +42,7 @@ sub open_test {
     }
 
     $self->_test_finished();
-    
+
     @SuiteNameStack = ();
 
     return $session;
@@ -50,68 +51,79 @@ sub open_test {
 #-----------------------------------------------------------------------------
 
 sub _handle_event {
-    my ($self , $result) = @_;
-    my $type = $result->type();
+    my ( $self, $result ) = @_;
+    my $type    = $result->type();
     my $handler = "_handle_$type";
-    
-#print STDERR "                      ->$type) ".$result->raw(). "   stack=".join(",",@SuiteNameStack)."\n";
+
+    #print STDERR "                      ->$type) ".$result->raw(). "   stack=".join(",",@SuiteNameStack)."\n";
 
     eval { $self->$handler($result) };
     die qq{Can't handle result of type=$type: $@} if $@;
 }
 
 sub _handle_test {
-    my ($self, $result) = @_;
+    my ( $self, $result ) = @_;
     $self->_test_finished();
 
     my $test_name = $self->_compute_test_name($result);
 
-    if (@SuiteNameStack && $test_name eq $SuiteNameStack[-1]) {
+    if ( @SuiteNameStack && $test_name eq $SuiteNameStack[-1] ) {
         pop @SuiteNameStack;
         return;
-    };
+    }
 
     $self->_test_started($result);
 }
 
 sub _handle_comment {
-    my ($self, $result) = @_;
-    (my $clean_comment = $result->comment()) =~ s/^\s+#/#/;
-    $TestOutputBuffer .= "$clean_comment\n";
+    my ( $self, $result ) = @_;
+    my $comment = $result->comment();
+    if ( $comment =~ /^\s*# Looks like you failed \d+/ ) {
+        $self->_test_finished();
+        return;
+    }
+    $comment =~ s/^\s+#/#/;
+    $TestOutputBuffer .= "$comment\n";
     $self->_print_raw($result);
 }
 
 sub _handle_unknown {
-    my ($self, $result) = @_;
+    my ( $self, $result ) = @_;
     my $raw = $result->raw();
-    if ($raw =~ /^\s*# Subtest: (.*)$/) {
+    if ( $raw =~ /^\s*# Subtest: (.*)$/ ) {
         $self->_test_finished();
         my $suite_name = $1;
         push @SuiteNameStack, $suite_name;
-    } elsif ($raw =~ /^\s*(not )?ok (\d+) - (.*)$/) {
-        my $is_ok = !$1;
-        my $test_num = $2;
+    }
+    elsif ( $raw =~ /^\s*(not )?ok (\d+) - (.*)$/ ) {
+        my $is_ok     = !$1;
+        my $test_num  = $2;
         my $test_name = $3;
         $self->_test_finished();
-        if (@SuiteNameStack && $test_name eq $SuiteNameStack[-1]) {
+        if ( @SuiteNameStack && $test_name eq $SuiteNameStack[-1] ) {
             pop @SuiteNameStack;
-        } else {
-            my $ok = $is_ok? 'ok': 'not ok';
-            my $result = TAP::Parser::Result::Test->new({
-                 'ok' => $ok,
-                 'explanation' => '',
-                 'directive' => '',
-                 'type' => 'test',
-                 'test_num' => $test_num,
-                 'description' => "- $test_name",
-                 'raw' => "$ok $test_num - $test_name", 
-            });
+        }
+        else {
+            my $ok = $is_ok ? 'ok' : 'not ok';
+            my $result = TAP::Parser::Result::Test->new(
+                {
+                    'ok'          => $ok,
+                    'explanation' => '',
+                    'directive'   => '',
+                    'type'        => 'test',
+                    'test_num'    => $test_num,
+                    'description' => "- $test_name",
+                    'raw'         => "$ok $test_num - $test_name",
+                }
+            );
             $self->_test_started($result);
         }
-    } elsif ($raw =~ /^\s*# Looks like you failed \d+/) {
+    }
+    elsif ( $raw =~ /^\s*# Looks like you failed \d+/ ) {
         $self->_test_finished();
-    } elsif ($raw =~ /^\s*# /) {
-        (my $clean_raw = $raw) =~ s/^\s+#/#/;
+    }
+    elsif ( $raw =~ /^\s*# / ) {
+        ( my $clean_raw = $raw ) =~ s/^\s+#/#/;
         $TestOutputBuffer .= $clean_raw if $LastTestResult;
         $self->_print_raw($result);
     }
@@ -121,58 +133,63 @@ sub _handle_plan {
 }
 
 sub _test_started {
-    my ($self, $result) = @_;
+    my ( $self, $result ) = @_;
     my $test_name = $self->_compute_test_name($result);
-    my %name = (name => $self->_qualify_test_name($test_name));
-    teamcity_emit_build_message('testStarted', %name);
-    $LastTestName = $test_name;
+    my %name = ( name => $self->_qualify_test_name($test_name) );
+    teamcity_emit_build_message( 'testStarted', %name );
+    $LastTestName   = $test_name;
     $LastTestResult = $result;
 }
 
 sub _test_finished {
     my ($self) = @_;
     return unless $LastTestResult;
-    $self->_emit_teamcity_test_results($LastTestName, $LastTestResult);
-    my %name = (name => $self->_qualify_test_name($LastTestName));
-    teamcity_emit_build_message('testFinished', %name);
+    $self->_emit_teamcity_test_results( $LastTestName, $LastTestResult );
+    my %name = ( name => $self->_qualify_test_name($LastTestName) );
+    teamcity_emit_build_message( 'testFinished', %name );
     undef $LastTestName;
     undef $LastTestResult;
 }
 
 sub _emit_teamcity_test_results {
-    my ($self, $test_name, $result) = @_;
+    my ( $self, $test_name, $result ) = @_;
 
     my $buffer = $TestOutputBuffer;
     $TestOutputBuffer = q{};
 
-    my %name = (name => $self->_qualify_test_name($test_name));
+    my %name = ( name => $self->_qualify_test_name($test_name) );
 
-    if ($result->has_todo() || $result->has_skip()) {
+    if ( $result->has_todo() || $result->has_skip() ) {
         teamcity_emit_build_message(
-            'testIgnored', %name, message => $result->explanation());
+            'testIgnored', %name,
+            message => $result->explanation()
+        );
         return;
     }
 
-    unless ($result->is_ok()) {
-        teamcity_emit_build_message('testFailed', %name,
-            message => ($result->is_ok()? 'ok': 'not ok'),
-            details => $buffer);
+    unless ( $result->is_ok() ) {
+        teamcity_emit_build_message(
+            'testFailed', %name,
+            message => ( $result->is_ok() ? 'ok' : 'not ok' ),
+            details => $buffer
+        );
     }
 }
 
 #-----------------------------------------------------------------------------
 
 sub _compute_test_name {
-    my ($self, $result) = @_;
+    my ( $self, $result ) = @_;
     my $description = $result->description();
-    my $test_name = $description eq q{}? $result->explanation() : $description;
+    my $test_name
+        = $description eq q{} ? $result->explanation() : $description;
     $test_name =~ s/^-\s//;
     return $test_name;
 }
 
 sub _qualify_test_name {
-    my ($self, $test_name) = @_;
-    my $namespace = join('.', @SuiteNameStack);
+    my ( $self, $test_name ) = @_;
+    my $namespace = join( '.', @SuiteNameStack );
     for ($namespace) {
         s{/}{.}g;
         s/::/./g;
@@ -181,8 +198,8 @@ sub _qualify_test_name {
 }
 
 sub _print_raw {
-    my ($self, $result) = @_;
-    print $result->raw()."\n";
+    my ( $self, $result ) = @_;
+    print $result->raw() . "\n";
 }
 
 1;
@@ -284,7 +301,6 @@ it under the same terms as Perl itself.  The full text of this license
 can be found in the LICENSE file included with this module.
 
 =cut
-
 
 ##############################################################################
 # Local Variables:
