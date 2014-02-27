@@ -18,7 +18,7 @@ sub test_formatter {
     my $expected  = file($data_dir, 'expected.txt')->slurp;
     my $tmp_dir   = dir(tempdir(CLEANUP => 1));
     my $out_file  = $tmp_dir->file('actual.txt');
-    my $prove     = "prove --lib --merge";
+    my $prove     = "prove --lib --merge --verbose";
     my $formatter = '--formatter MM::TAP::Formatter::TeamCity';
 
     my $is_ok = !system("$prove $formatter $input > $out_file");
@@ -30,7 +30,9 @@ sub test_formatter {
     my @actual = $out_file->slurp;
     pop @actual for 1..($is_ok? 3: 8);
     my $actual = join q{}, @actual;
-for ($actual,$expected){s/\n//g}
+
+#for ($actual,$expected){s/\n//g}
+
     is $actual, $expected, "running test in $data_dir";
 }
 

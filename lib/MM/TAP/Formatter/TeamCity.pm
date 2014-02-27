@@ -53,6 +53,9 @@ sub _handle_event {
     my ($self , $result) = @_;
     my $type = $result->type();
     my $handler = "_handle_$type";
+    
+#print STDERR "                      ->$type) ".$result->raw(). "   stack=".join(",",@SuiteNameStack)."\n";
+
     eval { $self->$handler($result) };
     die qq{Can't handle result of type=$type: $@} if $@;
 }
@@ -105,6 +108,8 @@ sub _handle_unknown {
             });
             $self->_test_started($result);
         }
+    } elsif ($raw =~ /^\s*# Looks like you failed \d+/) {
+        $self->_test_finished();
     } elsif ($raw =~ /^\s*# /) {
         (my $clean_raw = $raw) =~ s/^\s+#/#/;
         $TestOutputBuffer .= $clean_raw if $LastTestResult;
