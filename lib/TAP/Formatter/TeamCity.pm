@@ -68,7 +68,7 @@ sub _handle_test {
     my $test_name = $self->_compute_test_name($result);
 
     if (@SuiteNameStack && $test_name eq $SuiteNameStack[-1]) {
-        my $suite_name = pop @SuiteNameStack;
+#        my $suite_name = pop @SuiteNameStack;
 #        teamcity_emit_build_message('testSuiteFinished', name => $suite_name);
         return;
     };
@@ -96,10 +96,9 @@ sub _handle_unknown {
         my $test_name = $3;
         $self->_test_finished();
         if (@SuiteNameStack && $test_name eq $SuiteNameStack[-1]) {
-            my $suite_name = pop @SuiteNameStack;
+#            my $suite_name = pop @SuiteNameStack;
 #            teamcity_emit_build_message('testSuiteFinished', name => $suite_name);
         } else {
-            $self->_test_finished();
             my $ok = $is_ok? 'ok': 'not ok';
             my $result = TAP::Parser::Result::Test->new({
                  'ok' => $ok,
