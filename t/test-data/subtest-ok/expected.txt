@@ -1,0 +1,4 @@
+##teamcity[testStarted name='t.test-data.subtest-ok.input.st.subtest-ok-msg-1']
+##teamcity[testFinished name='t.test-data.subtest-ok.input.st.subtest-ok-msg-1']
+##teamcity[testStarted name='t.test-data.subtest-ok.input.st.subtest-A-name.subtest-ok-msg-2']
+##teamcity[testFinished name='t.test-data.subtest-ok.input.st.subtest-A-name.subtest-ok-msg-2']

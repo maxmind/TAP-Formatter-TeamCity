@@ -35,7 +35,6 @@ sub open_test {
 
     push @SuiteNameStack, $test;
 
-
     while ( defined( my $result = $parser->next() ) ) {
         $self->_handle_event($result);
         $session->result($result);
@@ -43,7 +42,7 @@ sub open_test {
 
     $self->_test_finished();
     
-    pop @SuiteNameStack;
+    @SuiteNameStack = ();
 
     return $session;
 }

@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 
+use lib 't/lib';
+
 use File::Temp qw(tempdir);
 use Path::Class qw(dir file);
 
