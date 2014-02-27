@@ -1,10 +1,10 @@
-package TAP::Formatter::TeamCity;
+package MM::TAP::Formatter::TeamCity;
 
 use strict;
 use warnings;
 
 use TeamCity::BuildMessages qw(:all);
-use TAP::Formatter::Session::TeamCity;
+use MM::TAP::Formatter::Session::TeamCity;
 use TAP::Parser::Result::Test;
 
 #-----------------------------------------------------------------------------
@@ -25,7 +25,7 @@ my $TestOutputBuffer = q{};
 sub open_test {
     my ($self, $test, $parser) = @_;
 
-    my $session = TAP::Formatter::Session::TeamCity->new(
+    my $session = MM::TAP::Formatter::Session::TeamCity->new(
         {   name       => $test,
             formatter  => $self,
             parser     => $parser,

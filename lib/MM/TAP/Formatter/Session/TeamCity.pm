@@ -1,4 +1,4 @@
-package TAP::Formatter::Session::TeamCity;
+package MM::TAP::Formatter::Session::TeamCity;
 
 use strict;
 use warnings;

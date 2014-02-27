@@ -17,7 +17,7 @@ sub test_formatter {
     my $tmp_dir   = dir(tempdir(CLEANUP => 1));
     my $out_file  = $tmp_dir->file('actual.txt');
     my $prove     = "prove --lib --merge";
-    my $formatter = '--formatter TAP::Formatter::TeamCity';
+    my $formatter = '--formatter MM::TAP::Formatter::TeamCity';
 
     my $is_ok = !system("$prove $formatter $input > $out_file");
 
