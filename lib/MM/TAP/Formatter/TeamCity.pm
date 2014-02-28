@@ -55,7 +55,7 @@ sub _handle_event {
     my $type    = $result->type();
     my $handler = "_handle_$type";
 
-    #    print STDERR "                      ->$type) ".$result->raw(). "   stack=".join(",",@SuiteNameStack)."\n";
+#print STDERR "                      ->$type) ".$result->raw(). "   stack=".join(",",@SuiteNameStack)."\n";
 
     eval { $self->$handler($result) };
     die qq{Can't handle result of type=$type: $@} if $@;
@@ -82,7 +82,8 @@ sub _handle_comment {
         $self->_test_finished();
         return;
     }
-    $comment =~ s/^\s+#/#/;
+    $comment =~ s/^\s+#\s*//;
+    return if $comment eq q{};
     $TestOutputBuffer .= "$comment\n";
     $self->_print_raw($result);
 }
@@ -122,8 +123,9 @@ sub _handle_unknown {
     elsif ( $raw =~ /^\s*# Looks like you failed \d+/ ) {
         $self->_test_finished();
     }
-    elsif ( $raw =~ /^\s*# / ) {
-        ( my $clean_raw = $raw ) =~ s/^\s+#/#/;
+    elsif ( $raw =~ /^\s*#/ ) {
+        ( my $clean_raw = $raw ) =~ s/^\s+#\s*//;
+        return if $clean_raw eq q{};
         $TestOutputBuffer .= $clean_raw if $LastTestResult;
         $self->_print_raw($result);
     }
