@@ -7,6 +7,7 @@ use File::Temp qw(tempdir);
 use Path::Class qw(dir file);
 
 use Test::More;
+use Test::Differences;
 
 test_formatter($_) for <t/test-data/*>;
 
@@ -31,9 +32,6 @@ sub test_formatter {
     pop @actual for 1..($is_ok? 3: 8);
     my $actual = join q{}, @actual;
 
-file('/tmp/a')->spew($actual);
-file('/tmp/b')->spew($expected);
-
-    is $actual, $expected, "running test in $data_dir";
+    eq_or_diff_text $actual, $expected, "running test in $data_dir";
 }
 

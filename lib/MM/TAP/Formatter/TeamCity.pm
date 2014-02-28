@@ -55,7 +55,7 @@ sub _handle_event {
     my $type    = $result->type();
     my $handler = "_handle_$type";
 
-# print STDERR "                      ->$type) ".$result->raw(). "   stack=".join(",",@SuiteNameStack)."\n";
+#print STDERR "                      ->$type) ".$result->raw(). "   stack=".join(",",@SuiteNameStack)."\n";
 
     eval { $self->$handler($result) };
     die qq{Can't handle result of type=$type: $@} if $@;
@@ -82,7 +82,8 @@ sub _handle_comment {
         $self->_test_finished();
         return;
     }
-    $comment =~ s/^\s+#\s*//;
+    $comment =~ s/^\s*#\s*//;
+    $comment =~ s/\s+$//;
     return if $comment eq q{};
     $TestOutputBuffer .= "$comment\n";
     $self->_print_raw($result);
@@ -138,8 +139,9 @@ sub _handle_unknown {
     }
     elsif ( $raw =~ /^\s*#/ ) {
         ( my $clean_raw = $raw ) =~ s/^\s*#\s*//;
+        $clean_raw =~ s/\s+$//;
         return if $clean_raw eq q{};
-        $TestOutputBuffer .= $clean_raw if $LastTestResult;
+        $TestOutputBuffer .= "$clean_raw\n" if $LastTestResult;
         $self->_print_raw($result);
     }
 }
@@ -173,6 +175,7 @@ sub _emit_teamcity_test_results {
 
     my $buffer = $TestOutputBuffer;
     $TestOutputBuffer = q{};
+    chomp $buffer;
 
     my %name = ( name => $self->_qualify_test_name($test_name) );
 
