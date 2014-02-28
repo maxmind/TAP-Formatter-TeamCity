@@ -1,6 +1,6 @@
 ##teamcity[testStarted name='t.test-data.simple-fail.input.st.simple-fail-msg']
 #   Failed test 'simple-fail-msg'
 #   at t/test-data/simple-fail/input.st line 6.
-# Looks like you failed 1 test of 1.
-##teamcity[testFailed name='t.test-data.simple-fail.input.st.simple-fail-msg' message='not ok' details='Failed test |'simple-fail-msg|'|nat t/test-data/simple-fail/input.st line 6.|nLooks like you failed 1 test of 1.|n']
+##teamcity[testFailed name='t.test-data.simple-fail.input.st.simple-fail-msg' message='not ok' details='Failed test |'simple-fail-msg|'|nat t/test-data/simple-fail/input.st line 6.|n']
 ##teamcity[testFinished name='t.test-data.simple-fail.input.st.simple-fail-msg']
+# Looks like you failed 1 test of 1.

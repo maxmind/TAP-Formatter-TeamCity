@@ -55,7 +55,7 @@ sub _handle_event {
     my $type    = $result->type();
     my $handler = "_handle_$type";
 
-    #print STDERR "                      ->$type) ".$result->raw(). "   stack=".join(",",@SuiteNameStack)."\n";
+    #    print STDERR "                      ->$type) ".$result->raw(). "   stack=".join(",",@SuiteNameStack)."\n";
 
     eval { $self->$handler($result) };
     die qq{Can't handle result of type=$type: $@} if $@;
@@ -130,6 +130,8 @@ sub _handle_unknown {
 }
 
 sub _handle_plan {
+    my ($self) = @_;
+    $self->_test_finished();
 }
 
 sub _test_started {
