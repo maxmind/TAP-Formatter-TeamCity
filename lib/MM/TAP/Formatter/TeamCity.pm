@@ -84,9 +84,9 @@ sub _handle_comment {
         $self->_test_finished();
         return;
     }
-    $comment =~ s/^\s*#\s*//;
+    $comment =~ s/^\s*#\s?//;
     $comment =~ s/\s+$//;
-    return if $comment eq q{};
+    return if $comment =~ /^\s*$/;
     $TestOutputBuffer .= "$comment\n";
     $self->_print_raw($result);
 }
@@ -141,9 +141,9 @@ sub _handle_unknown {
         teamcity_emit_build_message( 'testFinished', %name );
     }
     elsif ( $raw =~ /^\s*#/ ) {
-        ( my $clean_raw = $raw ) =~ s/^\s*#\s*//;
+        ( my $clean_raw = $raw ) =~ s/^\s*#\s?//;
         $clean_raw =~ s/\s+$//;
-        return if $clean_raw eq q{};
+        return if $clean_raw =~ /^\s*$/;
         $TestOutputBuffer .= "$clean_raw\n" if $LastTestResult;
         $self->_print_raw($result);
     }

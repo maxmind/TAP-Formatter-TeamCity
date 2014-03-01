@@ -14,7 +14,7 @@
 ##teamcity[testStarted name='t.test-data.test-class-moose-mixed.input.st.TAP.Formatter.TeamCity.Test.SimpleFail.test_method_1.tcm-method-1-test-1']
         #   Failed test 'tcm-method-1-test-1'
         #   at t/lib/TAP/Formatter/TeamCity/Test/SimpleFail.pm line 9.
-##teamcity[testFailed name='t.test-data.test-class-moose-mixed.input.st.TAP.Formatter.TeamCity.Test.SimpleFail.test_method_1.tcm-method-1-test-1' message='not ok' details='Running tests for TAP::Formatter::TeamCity::Test::SimpleFail|nFailed test |'tcm-method-1-test-1|'|nat t/lib/TAP/Formatter/TeamCity/Test/SimpleFail.pm line 9.']
+##teamcity[testFailed name='t.test-data.test-class-moose-mixed.input.st.TAP.Formatter.TeamCity.Test.SimpleFail.test_method_1.tcm-method-1-test-1' message='not ok' details='Running tests for TAP::Formatter::TeamCity::Test::SimpleFail|n  Failed test |'tcm-method-1-test-1|'|n  at t/lib/TAP/Formatter/TeamCity/Test/SimpleFail.pm line 9.']
 ##teamcity[testFinished name='t.test-data.test-class-moose-mixed.input.st.TAP.Formatter.TeamCity.Test.SimpleFail.test_method_1.tcm-method-1-test-1']
 ##teamcity[testStarted name='t.test-data.test-class-moose-mixed.input.st.TAP.Formatter.TeamCity.Test.SimpleFail.test_method_1.tcm-method-1-test-2']
 ##teamcity[testFinished name='t.test-data.test-class-moose-mixed.input.st.TAP.Formatter.TeamCity.Test.SimpleFail.test_method_1.tcm-method-1-test-2']
@@ -26,7 +26,7 @@
 ##teamcity[testStarted name='t.test-data.test-class-moose-mixed.input.st.TAP.Formatter.TeamCity.Test.SimpleFail.test_method_2.tcm-method-2-test-2']
         #   Failed test 'tcm-method-2-test-2'
         #   at t/lib/TAP/Formatter/TeamCity/Test/SimpleFail.pm line 15.
-##teamcity[testFailed name='t.test-data.test-class-moose-mixed.input.st.TAP.Formatter.TeamCity.Test.SimpleFail.test_method_2.tcm-method-2-test-2' message='not ok' details='Failed test |'tcm-method-2-test-2|'|nat t/lib/TAP/Formatter/TeamCity/Test/SimpleFail.pm line 15.']
+##teamcity[testFailed name='t.test-data.test-class-moose-mixed.input.st.TAP.Formatter.TeamCity.Test.SimpleFail.test_method_2.tcm-method-2-test-2' message='not ok' details='  Failed test |'tcm-method-2-test-2|'|n  at t/lib/TAP/Formatter/TeamCity/Test/SimpleFail.pm line 15.']
 ##teamcity[testFinished name='t.test-data.test-class-moose-mixed.input.st.TAP.Formatter.TeamCity.Test.SimpleFail.test_method_2.tcm-method-2-test-2']
     #   Failed test 'test_method_2'
     #   at /home/eilara/local/perl5/perls/perl-5.16.3/lib/site_perl/5.16.3/Test/Class/Moose.pm line 301.
