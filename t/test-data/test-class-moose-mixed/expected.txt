@@ -32,4 +32,3 @@
     #   at /home/eilara/local/perl5/perls/perl-5.16.3/lib/site_perl/5.16.3/Test/Class/Moose.pm line 301.
 #   Failed test 'TAP::Formatter::TeamCity::Test::SimpleFail'
 #   at t/test-data/test-class-moose-mixed/input.st line 9.
-# Looks like you failed 1 test of 2.

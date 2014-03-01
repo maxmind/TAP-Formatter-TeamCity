@@ -79,7 +79,7 @@ sub _handle_test {
 
 sub _handle_comment {
     my ( $self, $result ) = @_;
-    my $comment = $result->comment();
+    my $comment = $result->raw();
     if ( $comment =~ /^\s*# Looks like you failed \d+/ ) {
         $self->_test_finished();
         return;
