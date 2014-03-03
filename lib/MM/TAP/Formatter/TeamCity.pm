@@ -1,5 +1,7 @@
 package MM::TAP::Formatter::TeamCity;
 
+use 5.010;
+
 use strict;
 use warnings;
 
@@ -36,7 +38,7 @@ sub open_test {
         }
     );
 
-    push @SuiteNameStack, $test;
+    $self->_start_suite($test);
 
     while ( defined( my $result = $parser->next() ) ) {
         $self->_handle_event($result);
@@ -45,6 +47,7 @@ sub open_test {
 
     $self->_test_finished();
 
+    $self->_finish_suite($test);
     @SuiteNameStack = ();
 
     return $session;
@@ -57,7 +60,7 @@ sub _handle_event {
     my $type    = $result->type();
     my $handler = "_handle_$type";
 
-    #print STDERR "                      ->$type) ".$result->raw(). "   stack=".join(",",@SuiteNameStack)."\n";
+#print STDERR "                      ->$type) ".$result->raw(). "   stack=".join(",",@SuiteNameStack)."\n";
 
     eval { $self->$handler($result) };
     die qq{Can't handle result of type=$type: $@} if $@;
@@ -69,12 +72,7 @@ sub _handle_test {
 
     my $test_name = $self->_compute_test_name($result);
 
-    if ( @SuiteNameStack && $test_name eq $SuiteNameStack[-1] ) {
-        pop @SuiteNameStack;
-        return;
-    }
-
-    $self->_test_started($result);
+    $self->_test_started($result) unless $self->_finish_suite();
 }
 
 sub _handle_comment {
@@ -96,18 +94,14 @@ sub _handle_unknown {
     my $raw = $result->raw();
     if ( $raw =~ /^\s*# Subtest: (.*)$/ ) {
         $self->_test_finished();
-        my $suite_name = $1;
-        push @SuiteNameStack, $suite_name;
+        $self->_start_suite($1);
     }
     elsif ( $raw =~ /^\s*(not )?ok (\d+) - (.*)$/ ) {
         my $is_ok     = !$1;
         my $test_num  = $2;
         my $test_name = $3;
         $self->_test_finished();
-        if ( @SuiteNameStack && $test_name eq $SuiteNameStack[-1] ) {
-            pop @SuiteNameStack;
-        }
-        else {
+        unless ($self->_finish_suite($test_name)) {
             my $ok = $is_ok ? 'ok' : 'not ok';
             my $result = TAP::Parser::Result::Test->new(
                 {
@@ -130,15 +124,15 @@ sub _handle_unknown {
 
         # when tcm skips methods, we get 1st a Subtest message
         # then "ok $num # skip $message"
-        my $reason    = $1;
-        my $test_name = pop @SuiteNameStack;
-        my %name      = ( name => $self->_qualify_test_name($test_name) );
+        my $reason = $1;
+        my %name   = ( name => 'Skipped' );
         teamcity_emit_build_message( 'testStarted', %name );
         teamcity_emit_build_message(
             'testIgnored', %name,
             message => $reason
         );
-        teamcity_emit_build_message( 'testFinished', %name );
+        $self->_finish_test('Skipped');
+        $self->_finish_suite();
     }
     elsif ( $raw =~ /^\s*#/ ) {
         ( my $clean_raw = $raw ) =~ s/^\s*#\s?//;
@@ -157,7 +151,7 @@ sub _handle_plan {
 sub _test_started {
     my ( $self, $result ) = @_;
     my $test_name = $self->_compute_test_name($result);
-    my %name = ( name => $self->_qualify_test_name($test_name) );
+    my %name = ( name => $test_name );
     teamcity_emit_build_message( 'testStarted', %name );
     $LastTestName   = $test_name;
     $LastTestResult = $result;
@@ -167,10 +161,7 @@ sub _test_finished {
     my ($self) = @_;
     return unless $LastTestResult;
     $self->_emit_teamcity_test_results( $LastTestName, $LastTestResult );
-    my %name = ( name => $self->_qualify_test_name($LastTestName) );
-    teamcity_emit_build_message( 'testFinished', %name );
-    undef $LastTestName;
-    undef $LastTestResult;
+    $self->_finish_test($LastTestName);
 }
 
 sub _emit_teamcity_test_results {
@@ -180,7 +171,7 @@ sub _emit_teamcity_test_results {
     $TestOutputBuffer = q{};
     chomp $buffer;
 
-    my %name = ( name => $self->_qualify_test_name($test_name) );
+    my %name = ( name => $test_name );
 
     if ( $result->has_todo() || $result->has_skip() ) {
         teamcity_emit_build_message(
@@ -210,19 +201,46 @@ sub _compute_test_name {
     return $test_name;
 }
 
-sub _qualify_test_name {
-    my ( $self, $test_name ) = @_;
-    my $namespace = join( '.', @SuiteNameStack );
-    for ($namespace) {
-        s{/}{.}g;
-        s/::/./g;
-    }
-    return "$namespace.$test_name";
-}
-
 sub _print_raw {
     my ( $self, $result ) = @_;
     print $result->raw() . "\n";
+}
+
+sub _finish_test {
+    my ( undef, $test_name ) = @_;
+    my %name = ( name => $test_name );
+    teamcity_emit_build_message( 'testFinished', %name );
+    undef $LastTestName;
+    undef $LastTestResult;
+}
+
+sub _start_suite {
+    my ( undef, $suite_name ) = @_;
+    push @SuiteNameStack, $suite_name;
+    teamcity_emit_build_message( 'testSuiteStarted', name => $suite_name );
+}
+
+sub _finish_suite {
+    my ( undef, $name ) = @_;
+    return 0 unless @SuiteNameStack;
+
+    $name //= $SuiteNameStack[-1];
+
+    my $result = $name eq $SuiteNameStack[-1];
+    if ($result) {
+        pop @SuiteNameStack;
+        teamcity_emit_build_message('testSuiteFinished', name => $name);
+    }
+    return $result;
+}
+
+sub _fix_suite_name {
+    my $suite_name = pop;
+    for ($suite_name) {
+        s{/}{.}g;
+        s/::/./g;
+    }
+    return $suite_name;
 }
 
 1;
