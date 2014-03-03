@@ -60,7 +60,7 @@ sub _handle_event {
     my $type    = $result->type();
     my $handler = "_handle_$type";
 
-#print STDERR "                      ->$type) ".$result->raw(). "   stack=".join(",",@SuiteNameStack)."\n";
+print STDERR "                      ->$type) ".$result->raw(). "   stack=".join(",",@SuiteNameStack)."\n";
 
     eval { $self->$handler($result) };
     die qq{Can't handle result of type=$type: $@} if $@;
@@ -72,7 +72,7 @@ sub _handle_test {
 
     my $test_name = $self->_compute_test_name($result);
 
-    $self->_test_started($result) unless $self->_finish_suite();
+    $self->_test_started($result) unless $self->_finish_suite($test_name);
 }
 
 sub _handle_comment {
@@ -101,7 +101,7 @@ sub _handle_unknown {
         my $test_num  = $2;
         my $test_name = $3;
         $self->_test_finished();
-        unless ($self->_finish_suite($test_name)) {
+        unless ( $self->_finish_suite($test_name) ) {
             my $ok = $is_ok ? 'ok' : 'not ok';
             my $result = TAP::Parser::Result::Test->new(
                 {
@@ -125,7 +125,7 @@ sub _handle_unknown {
         # when tcm skips methods, we get 1st a Subtest message
         # then "ok $num # skip $message"
         my $reason = $1;
-        my %name   = ( name => 'Skipped' );
+        my %name = ( name => 'Skipped' );
         teamcity_emit_build_message( 'testStarted', %name );
         teamcity_emit_build_message(
             'testIgnored', %name,
@@ -229,7 +229,7 @@ sub _finish_suite {
     my $result = $name eq $SuiteNameStack[-1];
     if ($result) {
         pop @SuiteNameStack;
-        teamcity_emit_build_message('testSuiteFinished', name => $name);
+        teamcity_emit_build_message( 'testSuiteFinished', name => $name );
     }
     return $result;
 }
