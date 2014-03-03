@@ -60,7 +60,10 @@ sub _handle_event {
     my $type    = $result->type();
     my $handler = "_handle_$type";
 
-print STDERR "                      ->$type) ".$result->raw(). "   stack=".join(",",@SuiteNameStack)."\n";
+#    print STDERR "                      ->$type) "
+#        . $result->raw()
+#        . "   stack="
+#        . join( ",", @SuiteNameStack ) . "\n";
 
     eval { $self->$handler($result) };
     die qq{Can't handle result of type=$type: $@} if $@;
@@ -190,22 +193,6 @@ sub _emit_teamcity_test_results {
     }
 }
 
-#-----------------------------------------------------------------------------
-
-sub _compute_test_name {
-    my ( $self, $result ) = @_;
-    my $description = $result->description();
-    my $test_name
-        = $description eq q{} ? $result->explanation() : $description;
-    $test_name =~ s/^-\s//;
-    return $test_name;
-}
-
-sub _print_raw {
-    my ( $self, $result ) = @_;
-    print $result->raw() . "\n";
-}
-
 sub _finish_test {
     my ( undef, $test_name ) = @_;
     my %name = ( name => $test_name );
@@ -241,6 +228,20 @@ sub _fix_suite_name {
         s/::/./g;
     }
     return $suite_name;
+}
+
+sub _compute_test_name {
+    my ( $self, $result ) = @_;
+    my $description = $result->description();
+    my $test_name
+        = $description eq q{} ? $result->explanation() : $description;
+    $test_name =~ s/^-\s//;
+    return $test_name;
+}
+
+sub _print_raw {
+    my ( $self, $result ) = @_;
+    print $result->raw() . "\n";
 }
 
 1;

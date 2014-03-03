@@ -1,5 +1,7 @@
-##teamcity[testStarted name='t.test-data.simple-fail.input.st.simple-fail-msg']
+##teamcity[testSuiteStarted name='t/test-data/simple-fail/input.st']
+##teamcity[testStarted name='simple-fail-msg']
 #   Failed test 'simple-fail-msg'
 #   at t/test-data/simple-fail/input.st line 6.
-##teamcity[testFailed name='t.test-data.simple-fail.input.st.simple-fail-msg' message='not ok' details='  Failed test |'simple-fail-msg|'|n  at t/test-data/simple-fail/input.st line 6.']
-##teamcity[testFinished name='t.test-data.simple-fail.input.st.simple-fail-msg']
+##teamcity[testFailed name='simple-fail-msg' message='not ok' details='  Failed test |'simple-fail-msg|'|n  at t/test-data/simple-fail/input.st line 6.']
+##teamcity[testFinished name='simple-fail-msg']
+##teamcity[testSuiteFinished name='t/test-data/simple-fail/input.st']
