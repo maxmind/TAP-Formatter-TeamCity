@@ -5,13 +5,9 @@ use 5.010;
 use strict;
 use warnings;
 
-use Test::Simple 1.001002;
-
 use TeamCity::BuildMessages qw(:all);
 use MM::TAP::Formatter::Session::TeamCity;
 use TAP::Parser::Result::Test;
-
-#-----------------------------------------------------------------------------
 
 use base qw(TAP::Formatter::Base);
 
@@ -106,18 +102,18 @@ sub _handle_unknown {
         $self->_test_finished();
         unless ( $self->_finish_suite($test_name) ) {
             my $ok = $is_ok ? 'ok' : 'not ok';
-            my $result = TAP::Parser::Result::Test->new(
+            my $actual_result = TAP::Parser::Result::Test->new(
                 {
                     'ok'          => $ok,
-                    'explanation' => '',
-                    'directive'   => '',
+                    'explanation' => q{},
+                    'directive'   => q{},
                     'type'        => 'test',
                     'test_num'    => $test_num,
                     'description' => "- $test_name",
                     'raw'         => "$ok $test_num - $test_name",
                 }
             );
-            $self->_test_started($result);
+            $self->_test_started($actual_result);
         }
     }
     elsif ( $raw =~ /^\s*# Looks like you failed \d+/ ) {
@@ -193,6 +189,8 @@ sub _emit_teamcity_test_results {
     }
 }
 
+#-----------------------------------------------------------------------------
+
 sub _finish_test {
     my ( undef, $test_name ) = @_;
     my %name = ( name => $test_name );
@@ -241,7 +239,7 @@ sub _compute_test_name {
 
 sub _print_raw {
     my ( $self, $result ) = @_;
-    print $result->raw() . "\n";
+    print( $result->raw() . "\n" ) or die "Can't print to STDOUT: $!";
 }
 
 1;
