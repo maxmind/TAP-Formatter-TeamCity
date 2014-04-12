@@ -3,7 +3,7 @@
 ##teamcity[testSuiteStarted name='TAP::Formatter::TeamCity::Test::SimpleSkip']
     # TAP::Formatter::TeamCity::Test::SimpleSkip->test_method_1()
 ##teamcity[testSuiteStarted name='test_method_1']
-##teamcity[testStarted name='Skipped']
+##teamcity[testStarted name='Skipped' captureStandardOutput='true']
 ##teamcity[testIgnored name='Skipped' message='"the reason for skipping test_method_1"']
 ##teamcity[testFinished name='Skipped']
 ##teamcity[testSuiteFinished name='test_method_1']

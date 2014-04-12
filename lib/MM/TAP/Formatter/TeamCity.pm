@@ -9,6 +9,8 @@ use TeamCity::BuildMessages qw(:all);
 use MM::TAP::Formatter::Session::TeamCity;
 use TAP::Parser::Result::Test;
 
+#-----------------------------------------------------------------------------
+
 use base qw(TAP::Formatter::Base);
 
 #-----------------------------------------------------------------------------
@@ -24,6 +26,11 @@ my $TestOutputBuffer = q{};
 
 sub open_test {
     my ( $self, $test, $parser ) = @_;
+
+
+    # last test file could have died with no test/suite finishing
+    # we must report the error
+    $self->_recover_from_catastrophic_death if @SuiteNameStack;
 
     my $session = MM::TAP::Formatter::Session::TeamCity->new(
         {
@@ -41,12 +48,60 @@ sub open_test {
         $session->result($result);
     }
 
-    $self->_test_finished();
-
-    $self->_finish_suite($test);
-    @SuiteNameStack = ();
+    {
+        my $no_tests_message
+            = 'Tests were run but no plan was declared and done_testing';
+        if ( $TestOutputBuffer =~ /^$no_tests_message\(\) was not seen\.$/m )
+        {
+            $self->_recover_from_catastrophic_death;
+        }
+        else {
+            $self->_test_finished();
+            $self->_finish_suite($test);
+        }
+    }
 
     return $session;
+}
+
+sub _recover_from_catastrophic_death {
+    my $self = shift;
+    if ($LastTestResult) {
+        my $test_num    = $LastTestResult->number;
+        my $description = $LastTestResult->description;
+        $LastTestResult = TAP::Parser::Result::Test->new(
+            {
+                'ok'          => 'not ok',
+                'explanation' => q{},
+                'directive'   => q{},
+                'type'        => 'test',
+                'test_num'    => $test_num,
+                'description' => "- $description",
+                'raw'         => "not ok $test_num - $description",
+            }
+        );
+    }
+    else {
+        my $suite_type  = @SuiteNameStack == 1 ? 'file' : 'subtest';
+        my $test_name   = "Test died before reaching end of $suite_type";
+        my $test_result = TAP::Parser::Result::Test->new(
+            {
+                'ok'          => 'not ok',
+                'explanation' => q{},
+                'directive'   => q{},
+                'type'        => 'test',
+                'test_num'    => 1,
+                'description' => "- $test_name",
+                'raw'         => "not ok 1 - $test_name",
+            }
+        );
+        $self->_test_started($test_result);
+    }
+    $self->_test_finished();
+    {
+        my @copy = @SuiteNameStack;
+        $self->_finish_suite() for @copy;
+    }
 }
 
 #-----------------------------------------------------------------------------
@@ -56,15 +111,16 @@ sub _handle_event {
     my $type    = $result->type();
     my $handler = "_handle_$type";
 
-#    print STDERR "                      ->$type) "
-#        . $result->raw()
-#        . "   stack="
-#        . join( ",", @SuiteNameStack ) . "\n";
+#       print STDERR "                      ->$type) "
+#           . $result->raw()
+#           . "   stack="
+#           . join( ",", @SuiteNameStack ) . "\n";
 
-    eval { $self->$handler($result) };
-    die qq{Can't handle result of type=$type: $@} if $@;
+    eval { $self->$handler($result); 1 }
+        || die qq{Can't handle result of type=$type: $@};
 }
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _handle_test {
     my ( $self, $result ) = @_;
     $self->_test_finished();
@@ -74,6 +130,7 @@ sub _handle_test {
     $self->_test_started($result) unless $self->_finish_suite($test_name);
 }
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _handle_comment {
     my ( $self, $result ) = @_;
     my $comment = $result->raw();
@@ -88,6 +145,7 @@ sub _handle_comment {
     $self->_print_raw($result);
 }
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _handle_unknown {
     my ( $self, $result ) = @_;
     my $raw = $result->raw();
@@ -100,7 +158,8 @@ sub _handle_unknown {
         my $test_num  = $2;
         my $test_name = $3;
         $self->_test_finished();
-        unless ( $self->_finish_suite($test_name) ) {
+        my $f = $self->_finish_suite($test_name);
+        unless ($f) {
             my $ok = $is_ok ? 'ok' : 'not ok';
             my $actual_result = TAP::Parser::Result::Test->new(
                 {
@@ -125,7 +184,10 @@ sub _handle_unknown {
         # then "ok $num # skip $message"
         my $reason = $1;
         my %name = ( name => 'Skipped' );
-        teamcity_emit_build_message( 'testStarted', %name );
+        teamcity_emit_build_message(
+            'testStarted', %name,
+            captureStandardOutput => 'true'
+        );
         teamcity_emit_build_message(
             'testIgnored', %name,
             message => $reason
@@ -142,6 +204,7 @@ sub _handle_unknown {
     }
 }
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _handle_plan {
     my ($self) = @_;
     $self->_test_finished();
@@ -191,6 +254,20 @@ sub _emit_teamcity_test_results {
 
 #-----------------------------------------------------------------------------
 
+sub _compute_test_name {
+    my ( $self, $result ) = @_;
+    my $description = $result->description();
+    my $test_name
+        = $description eq q{} ? $result->explanation() : $description;
+    $test_name =~ s/^-\s//;
+    return $test_name;
+}
+
+sub _print_raw {
+    my ( $self, $result ) = @_;
+    print( $result->raw() . "\n" ) or die "Can't print to STDOUT: $!";
+}
+
 sub _finish_test {
     my ( undef, $test_name ) = @_;
     my %name = ( name => $test_name );
@@ -226,20 +303,6 @@ sub _fix_suite_name {
         s/::/./g;
     }
     return $suite_name;
-}
-
-sub _compute_test_name {
-    my ( $self, $result ) = @_;
-    my $description = $result->description();
-    my $test_name
-        = $description eq q{} ? $result->explanation() : $description;
-    $test_name =~ s/^-\s//;
-    return $test_name;
-}
-
-sub _print_raw {
-    my ( $self, $result ) = @_;
-    print( $result->raw() . "\n" ) or die "Can't print to STDOUT: $!";
 }
 
 1;
