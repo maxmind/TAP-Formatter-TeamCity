@@ -1,5 +1,5 @@
 ##teamcity[testSuiteStarted name='t/test-data/simple-fail-comparison/input.st']
-##teamcity[testStarted name='simple-fail-comparison-msg']
+##teamcity[testStarted name='simple-fail-comparison-msg' captureStandardOutput='true']
 #   Failed test 'simple-fail-comparison-msg'
 #   at t/test-data/simple-fail-comparison/input.st line 6.
 #          got: 'a'

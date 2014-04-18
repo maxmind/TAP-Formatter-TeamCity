@@ -19,14 +19,15 @@ our $VERSION = '0.041';
 
 my $LastTestName;
 my $LastTestResult;
-my @SuiteNameStack   = ();
-my $TestOutputBuffer = q{};
+my $IsLastSuiteEmpty;
+my @SuiteNameStack    = ();
+my $TestOutputBuffer  = q{};
+my $SuiteOutputBuffer = q{};
 
 #-----------------------------------------------------------------------------
 
 sub open_test {
     my ( $self, $test, $parser ) = @_;
-
 
     # last test file could have died with no test/suite finishing
     # we must report the error
@@ -56,8 +57,30 @@ sub open_test {
             $self->_recover_from_catastrophic_death;
         }
         else {
-            $self->_test_finished();
-            $self->_finish_suite($test);
+            if ( !$self->_test_finished() && $SuiteOutputBuffer ) {
+                my $suite_type = @SuiteNameStack == 1 ? 'file' : 'subtest';
+                my $test_name
+                    = "Test died before reaching end of $suite_type";
+                my $test_result = TAP::Parser::Result::Test->new(
+                    {
+                        'ok'          => 'not ok',
+                        'explanation' => q{},
+                        'directive'   => q{},
+                        'type'        => 'test',
+                        'test_num'    => 1,
+                        'description' => "- $test_name",
+                        'raw'         => "not ok 1 - $test_name",
+                    }
+                );
+                $self->_test_started($test_result);
+                $TestOutputBuffer  = $SuiteOutputBuffer;
+                $SuiteOutputBuffer = q{};
+                $self->_test_finished();
+            }
+            {
+                my @copy = @SuiteNameStack;
+                $self->_finish_suite() for @copy;
+            }
         }
     }
 
@@ -111,10 +134,10 @@ sub _handle_event {
     my $type    = $result->type();
     my $handler = "_handle_$type";
 
-#       print STDERR "                      ->$type) "
-#           . $result->raw()
-#           . "   stack="
-#           . join( ",", @SuiteNameStack ) . "\n";
+           print STDERR "                      ->$type) "
+               . $result->raw()
+               . "   stack="
+               . join( ",", @SuiteNameStack ) . "\n" if $ENV{X};
 
     eval { $self->$handler($result); 1 }
         || die qq{Can't handle result of type=$type: $@};
@@ -202,6 +225,11 @@ sub _handle_unknown {
         $TestOutputBuffer .= "$clean_raw\n" if $LastTestResult;
         $self->_print_raw($result);
     }
+    elsif ( $raw !~ /^\s*$/ ) {
+        $SuiteOutputBuffer .= $raw;
+        $self->_print_raw($result)
+            unless $raw =~ /^\s*\d+\.\.\d+(?: # SKIP.*)?$/;
+    }
 }
 
 ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
@@ -214,7 +242,10 @@ sub _test_started {
     my ( $self, $result ) = @_;
     my $test_name = $self->_compute_test_name($result);
     my %name = ( name => $test_name );
-    teamcity_emit_build_message( 'testStarted', %name );
+    teamcity_emit_build_message(
+        'testStarted', %name,
+        captureStandardOutput => 'true'
+    );
     $LastTestName   = $test_name;
     $LastTestResult = $result;
 }
@@ -224,6 +255,7 @@ sub _test_finished {
     return unless $LastTestResult;
     $self->_emit_teamcity_test_results( $LastTestName, $LastTestResult );
     $self->_finish_test($LastTestName);
+    return 1;
 }
 
 sub _emit_teamcity_test_results {
@@ -274,23 +306,46 @@ sub _finish_test {
     teamcity_emit_build_message( 'testFinished', %name );
     undef $LastTestName;
     undef $LastTestResult;
+    $IsLastSuiteEmpty = 0;
 }
 
 sub _start_suite {
     my ( undef, $suite_name ) = @_;
     push @SuiteNameStack, $suite_name;
+    $IsLastSuiteEmpty = 1;
     teamcity_emit_build_message( 'testSuiteStarted', name => $suite_name );
 }
 
 sub _finish_suite {
-    my ( undef, $name ) = @_;
+    my ( $self, $name ) = @_;
     return 0 unless @SuiteNameStack;
 
     $name //= $SuiteNameStack[-1];
 
     my $result = $name eq $SuiteNameStack[-1];
     if ($result) {
+        if ($IsLastSuiteEmpty) {
+            my $suite_type  = @SuiteNameStack == 1 ? 'file' : 'subtest';
+            my $test_name   = "Test died before reaching end of $suite_type";
+            my $test_result = TAP::Parser::Result::Test->new(
+                {
+                    'ok'          => 'not ok',
+                    'explanation' => q{},
+                    'directive'   => q{},
+                    'type'        => 'test',
+                    'test_num'    => 1,
+                    'description' => "- $test_name",
+                    'raw'         => "not ok 1 - $test_name",
+                }
+            );
+            $self->_test_started($test_result);
+            $TestOutputBuffer  = $SuiteOutputBuffer;
+            $SuiteOutputBuffer = q{};
+            $self->_test_finished();
+        }
         pop @SuiteNameStack;
+        $SuiteOutputBuffer = q{};
+        $IsLastSuiteEmpty  = 0;
         teamcity_emit_build_message( 'testSuiteFinished', name => $name );
     }
     return $result;

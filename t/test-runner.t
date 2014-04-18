@@ -29,9 +29,10 @@ sub test_formatter {
     # so we chomp off the correct number of lines
 
     my @actual = $out_file->slurp;
-    pop @actual for 1..($is_ok? 3: 8);
+    my $pop = $actual[-3] =~ /Parse errors:/? 7:
+        $is_ok? 3: 8;
+    pop @actual for 1..$pop;
     my $actual = join q{}, @actual;
-
     eq_or_diff_text $actual, $expected, "running test in $data_dir";
 }
 
