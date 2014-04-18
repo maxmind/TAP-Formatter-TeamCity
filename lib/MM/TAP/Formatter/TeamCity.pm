@@ -234,8 +234,21 @@ sub _handle_unknown {
 
 ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _handle_plan {
-    my ($self) = @_;
-    $self->_test_finished();
+    my ( $self, $result ) = @_;
+    unless ( $self->_test_finished() ) {
+        if ( $result->directive eq 'SKIP' ) {
+            my %name = ( name => 'Skipped' );
+            teamcity_emit_build_message(
+                'testStarted', %name,
+                captureStandardOutput => 'true'
+            );
+            teamcity_emit_build_message(
+                'testIgnored', %name,
+                message => $result->explanation,
+            );
+            $self->_finish_test('Skipped');
+        }
+    }
 }
 
 sub _test_started {
