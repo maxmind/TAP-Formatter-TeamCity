@@ -30,6 +30,7 @@ sub test_formatter {
 
     my @actual = $out_file->slurp;
     my $pop = $actual[-3] =~ /Parse errors:/? 7:
+        $actual[-1] =~ /^Result: NOTESTS$/? 2:
         $is_ok? 3: 8;
     pop @actual for 1..$pop;
     my $actual = join q{}, @actual;
