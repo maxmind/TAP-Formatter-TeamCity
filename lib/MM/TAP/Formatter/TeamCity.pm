@@ -134,9 +134,9 @@ sub _handle_event {
     my $type    = $result->type();
     my $handler = "_handle_$type";
 
-               print STDERR "                      ->$type) "
+               print STDERR "                      ->$type) ["
                    . $result->raw()
-                   . "   stack="
+                   . "]   stack="
                    . join( ",", @SuiteNameStack ) . "\n" if $ENV{X};
 
     eval { $self->$handler($result); 1 }
@@ -176,11 +176,12 @@ sub _handle_unknown {
         $self->_test_finished();
         $self->_start_suite($1);
     }
-    elsif ( $raw =~ /^\s*(not )?ok (\d+) - (.*)$/ ) {
+    elsif ( $raw =~ /^\s*(not )?ok (\d+)( - (.*))?$/ ) {
         my $is_ok     = !$1;
         my $test_num  = $2;
-        my $test_name = $3;
+        my $test_name = $4;
         $self->_test_finished();
+        $test_name = 'NO TEST NAME' unless defined $test_name;
         my $f = $self->_finish_suite($test_name);
         unless ($f) {
             my $ok = $is_ok ? 'ok' : 'not ok';
