@@ -134,10 +134,10 @@ sub _handle_event {
     my $type    = $result->type();
     my $handler = "_handle_$type";
 
-           print STDERR "                      ->$type) "
-               . $result->raw()
-               . "   stack="
-               . join( ",", @SuiteNameStack ) . "\n" if $ENV{X};
+               print STDERR "                      ->$type) "
+                   . $result->raw()
+                   . "   stack="
+                   . join( ",", @SuiteNameStack ) . "\n" if $ENV{X};
 
     eval { $self->$handler($result); 1 }
         || die qq{Can't handle result of type=$type: $@};
@@ -305,6 +305,7 @@ sub _compute_test_name {
     my $test_name
         = $description eq q{} ? $result->explanation() : $description;
     $test_name =~ s/^-\s//;
+    $test_name = 'NO TEST NAME' if $test_name eq '';
     return $test_name;
 }
 
