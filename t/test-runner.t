@@ -34,6 +34,14 @@ sub test_formatter {
         $is_ok? 3: 8;
     pop @actual for 1..$pop;
     my $actual = join q{}, @actual;
+
+    # These hacks exist to replace user-specific paths with some sort of fixed
+    # test. Long term, it'd be better to test the formatter by feeding it TAP
+    # output directly rather than running various test files with the
+    # formatter in place.
+    $actual =~ s{(#\s+at ).+/Test/Class/Moose.pm line \d+}{${1}Test/Class/Moose.pm line XXX}g;
+    $actual =~ s{\(\@INC contains: .+?\)}{(\@INC contains: XXX)}sg;
+
     eq_or_diff_text $actual, $expected, "running test in $data_dir";
 }
 

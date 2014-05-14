@@ -29,7 +29,7 @@
 ##teamcity[testFinished name='tcm-method-1-test-2']
 ##teamcity[testSuiteFinished name='test_method_1']
     #   Failed test 'test_method_1'
-    #   at /home/eilara/local/perl5/perls/perl-5.16.3/lib/site_perl/5.16.3/Test/Class/Moose.pm line 330.
+    #   at Test/Class/Moose.pm line XXX.
     # TAP::Formatter::TeamCity::Test::SimpleFail->test_method_2()
 ##teamcity[testSuiteStarted name='test_method_2']
 ##teamcity[testStarted name='tcm-method-2-test-1' captureStandardOutput='true']
@@ -41,7 +41,7 @@
 ##teamcity[testFinished name='tcm-method-2-test-2']
 ##teamcity[testSuiteFinished name='test_method_2']
     #   Failed test 'test_method_2'
-    #   at /home/eilara/local/perl5/perls/perl-5.16.3/lib/site_perl/5.16.3/Test/Class/Moose.pm line 330.
+    #   at Test/Class/Moose.pm line XXX.
 ##teamcity[testSuiteFinished name='TAP::Formatter::TeamCity::Test::SimpleFail']
 #   Failed test 'TAP::Formatter::TeamCity::Test::SimpleFail'
 #   at t/test-data/test-class-moose-mixed/input.st line 9.
