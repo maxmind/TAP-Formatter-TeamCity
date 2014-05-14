@@ -1,5 +1,9 @@
 package MM::TAP::Formatter::TeamCity;
 
+# no mm::perl at the stage when this is run
+
+##no critic (MM::RequireUseMMPerl)
+
 use 5.010;
 
 use strict;
@@ -134,11 +138,6 @@ sub _handle_event {
     my $type    = $result->type();
     my $handler = "_handle_$type";
 
-               print STDERR "                      ->$type) ["
-                   . $result->raw()
-                   . "]   stack="
-                   . join( ",", @SuiteNameStack ) . "\n" if $ENV{X};
-
     eval { $self->$handler($result); 1 }
         || die qq{Can't handle result of type=$type: $@};
 }
@@ -226,7 +225,7 @@ sub _handle_unknown {
         $TestOutputBuffer .= "$clean_raw\n" if $LastTestResult;
         $self->_print_raw($result);
     }
-    elsif ( $raw !~ /^\s*$/ ) {
+    elsif ( $raw !~ /^\s*$/ && $raw !~ qr{\[checked\] .*/.*$} ) {
         $SuiteOutputBuffer .= $raw;
         $self->_print_raw($result)
             unless $raw =~ /^\s*\d+\.\.\d+(?: # SKIP.*)?$/;
@@ -306,7 +305,7 @@ sub _compute_test_name {
     my $test_name
         = $description eq q{} ? $result->explanation() : $description;
     $test_name =~ s/^-\s//;
-    $test_name = 'NO TEST NAME' if $test_name eq '';
+    $test_name = 'NO TEST NAME' if $test_name eq q{};
     return $test_name;
 }
 
