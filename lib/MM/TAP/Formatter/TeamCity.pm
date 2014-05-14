@@ -181,14 +181,20 @@ sub _handle_unknown {
         my $test_name = $4;
         $self->_test_finished();
         $test_name = 'NO TEST NAME' unless defined $test_name;
+
+        my $todo;
+        if ($test_name =~ s/ # TODO (.+)$//) {
+            $todo = $1;
+        }
+
         my $f = $self->_finish_suite($test_name);
         unless ($f) {
-            my $ok = $is_ok ? 'ok' : 'not ok';
+            my $ok = $is_ok || $todo ? 'ok' : 'not ok';
             my $actual_result = TAP::Parser::Result::Test->new(
                 {
                     'ok'          => $ok,
-                    'explanation' => q{},
-                    'directive'   => q{},
+                    'explanation' => $todo // q{},
+                    'directive'   => $todo ? 'TODO' : q{},
                     'type'        => 'test',
                     'test_num'    => $test_num,
                     'description' => "- $test_name",
