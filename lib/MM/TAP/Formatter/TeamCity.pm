@@ -231,7 +231,10 @@ sub _handle_unknown {
         $TestOutputBuffer .= "$clean_raw\n" if $LastTestResult;
         $self->_print_raw($result);
     }
-    elsif ( $raw !~ /^\s*$/ && $raw !~ qr{\[checked\] .*/.*$} ) {
+    elsif ( $raw =~ qr{\[checked\] .+$} ) {
+        print( "# $raw\n" ) or die "Can't print to STDOUT: $!";
+    }
+    elsif ( $raw !~ /^\s*$/ ) {
         $SuiteOutputBuffer .= $raw;
         $self->_print_raw($result)
             unless $raw =~ /^\s*\d+\.\.\d+(?: # SKIP.*)?$/;
