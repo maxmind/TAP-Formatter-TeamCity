@@ -10,6 +10,7 @@ use Test::More;
 use Test::Differences;
 
 test_formatter($_) for <t/test-data/*>;
+#test_formatter($_) for 't/test-data/test-class-moose-mixed';
 
 done_testing;
 
@@ -24,7 +25,7 @@ sub test_formatter {
 
     my $is_ok = !system("$prove $formatter $input > $out_file");
 
-    # we don't want to compare the test summary, but it is a 
+    # we don't want to compare the test summary, but it is
     # different number of lines depending on $is_ok
     # so we chomp off the correct number of lines
 
@@ -39,7 +40,7 @@ sub test_formatter {
     # test. Long term, it'd be better to test the formatter by feeding it TAP
     # output directly rather than running various test files with the
     # formatter in place.
-    $actual =~ s{(#\s+at ).+/Test/Class/Moose.pm line \d+}{${1}Test/Class/Moose.pm line XXX}g;
+    $actual =~ s{(#\s+at ).+/Moose([^\s]+) line \d+}{${1}CODE line XXX}g;
     $actual =~ s{\(\@INC contains: .+?\)}{(\@INC contains: XXX)}sg;
 
     eq_or_diff_text $actual, $expected, "running test in $data_dir";
