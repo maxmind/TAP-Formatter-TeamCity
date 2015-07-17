@@ -231,8 +231,9 @@ sub _handle_unknown {
         $TestOutputBuffer .= "$clean_raw\n" if $LastTestResult;
         $self->_print_raw($result);
     }
-    elsif ( $raw =~ qr{\[checked\] .+$} ) {
-        print( "# $raw\n" ) or die "Can't print to STDOUT: $!";
+    elsif ($raw =~ qr{\[checked\] .+$}
+        or $raw =~ qr{Deep recursion on subroutine "B::Deparse} ) {
+        print("# $raw\n") or die "Can't print to STDOUT: $!";
     }
     elsif ( $raw !~ /^\s*$/ ) {
         $SuiteOutputBuffer .= $raw;
