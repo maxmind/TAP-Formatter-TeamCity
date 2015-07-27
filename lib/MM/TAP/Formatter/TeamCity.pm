@@ -145,7 +145,26 @@ sub _handle_event {
 ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _handle_test {
     my ( $self, $result ) = @_;
-    $self->_test_finished();
+    unless ( $self->_test_finished ) {
+        if ( $result->directive eq 'SKIP' ) {
+
+            # when tcm skips methods, we get 1st a Subtest message
+            # then "ok $num # skip $message"
+            ( my $reason ) = ( $result->raw =~ /^\s*ok \d+ # skip (.*)$/ );
+            my %name = ( name => 'Skipped' );
+            teamcity_emit_build_message(
+                'testStarted', %name,
+                captureStandardOutput => 'true'
+            );
+            teamcity_emit_build_message(
+                'testIgnored', %name,
+                message => $reason
+            );
+            $self->_finish_test('Skipped');
+            $self->_finish_suite;
+            return;
+        }
+    }
 
     my $test_name = $self->_compute_test_name($result);
 
