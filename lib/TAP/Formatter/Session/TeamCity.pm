@@ -3,7 +3,7 @@ package TAP::Formatter::Session::TeamCity;
 use strict;
 use warnings;
 
-our $VERSION = '0.041';
+our $VERSION = '0.005';
 
 use base qw(TAP::Formatter::Session);
 
