@@ -1,5 +1,18 @@
 {{$NEXT}}
 
+* This release is nearly a rewrite from prior releases. Changes include:
+
+* Added tests for many different scenarios.
+
+* Made sure that this formatter works with skipped tests.
+
+* Made the formatter handle various test death scenarios cleanly.
+
+* Made sure that this formatter works with subtests and Test::Class::Moose.
+
+* Made the formatter hide deep recursion warnings triggered by Devel::Cover.
+
+
 0.04    2009-09-09
 
 * Test diagnostics are now passed through to STDOUT and STDERR, and these will
@@ -13,13 +26,16 @@
 
 * It seems to work for now, but I'll probably re-write it in the near future.
 
+
 0.03    2009-07-30
 
 * Added descriptions to the NAME sections in POD.
 
+
 0.02    2009-07-30
 
 * Forgot to use 'eval' when loading optional modules.
+
 
 0.01    2009-07-30
 
