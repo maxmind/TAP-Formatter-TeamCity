@@ -5,17 +5,13 @@ use 5.010;
 use strict;
 use warnings;
 
+our $VERSION = '0.041';
+
 use TeamCity::BuildMessages qw(:all);
 use TAP::Formatter::Session::TeamCity;
 use TAP::Parser::Result::Test;
 
-#-----------------------------------------------------------------------------
-
 use base qw(TAP::Formatter::Base);
-
-#-----------------------------------------------------------------------------
-
-our $VERSION = '0.041';
 
 my $LastTestName;
 my $LastTestResult;
@@ -23,8 +19,6 @@ my $IsLastSuiteEmpty;
 my @SuiteNameStack    = ();
 my $TestOutputBuffer  = q{};
 my $SuiteOutputBuffer = q{};
-
-#-----------------------------------------------------------------------------
 
 sub open_test {
     my ( $self, $test, $parser ) = @_;
@@ -322,8 +316,6 @@ sub _emit_teamcity_test_results {
     }
 }
 
-#-----------------------------------------------------------------------------
-
 sub _compute_test_name {
     my ( $self, $result ) = @_;
     my $description = $result->description();
@@ -401,11 +393,11 @@ sub _fix_suite_name {
 
 1;
 
+# ABSTRACT: Emit test results as TeamCity service messages
+
+__END__
+
 =pod
-
-=head1 NAME
-
-TAP::Formatter::TeamCity - Emit test results as TeamCity service messages
 
 =head1 SYNOPSIS
 
@@ -485,26 +477,4 @@ into your own projects.
 
 L<TeamCity::BuildMessages>
 
-=head1 AUTHOR
-
-Jeffrey Ryan Thalhammer <jeff@imaginative-software.com>
-
-=head1 COPYRIGHT
-
-Copyright (c) 2009 Imaginative Software Systems.  All rights reserved.
-
-This program is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself.  The full text of this license
-can be found in the LICENSE file included with this module.
-
 =cut
-
-##############################################################################
-# Local Variables:
-#   mode: cperl
-#   cperl-indent-level: 4
-#   fill-column: 78
-#   indent-tabs-mode: nil
-#   c-indentation-style: bsd
-# End:
-# ex: set ts=8 sts=4 sw=4 tw=78 ft=perl expandtab shiftround :

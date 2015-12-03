@@ -20,7 +20,7 @@ sub test_formatter {
     my $expected  = file($data_dir, 'expected.txt')->slurp;
     my $tmp_dir   = dir(tempdir(CLEANUP => 1));
     my $out_file  = $tmp_dir->file('actual.txt');
-    my $prove     = "prove --lib --merge --verbose";
+    my $prove     = 'prove --lib --merge --verbose';
     my $formatter = '--formatter TAP::Formatter::TeamCity';
 
     my $is_ok = !system("$prove $formatter $input > $out_file");
