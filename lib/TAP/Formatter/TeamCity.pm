@@ -1,8 +1,4 @@
-package MM::TAP::Formatter::TeamCity;
-
-# no mm::perl at the stage when this is run
-
-##no critic (MM::RequireUseMMPerl)
+package TAP::Formatter::TeamCity;
 
 use 5.010;
 
@@ -10,7 +6,7 @@ use strict;
 use warnings;
 
 use TeamCity::BuildMessages qw(:all);
-use MM::TAP::Formatter::Session::TeamCity;
+use TAP::Formatter::Session::TeamCity;
 use TAP::Parser::Result::Test;
 
 #-----------------------------------------------------------------------------
@@ -37,7 +33,7 @@ sub open_test {
     # we must report the error
     $self->_recover_from_catastrophic_death if @SuiteNameStack;
 
-    my $session = MM::TAP::Formatter::Session::TeamCity->new(
+    my $session = TAP::Formatter::Session::TeamCity->new(
         {
             name       => $test,
             formatter  => $self,
