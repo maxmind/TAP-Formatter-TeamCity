@@ -7,6 +7,7 @@ use Test::Class::Moose;
 
 sub test_method_1 {
     exit;
+    ## no critic (ControlStructures::ProhibitUnreachableCode)
     ok 1, 'tcm-method-1';
 }
 

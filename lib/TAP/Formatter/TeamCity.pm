@@ -192,7 +192,7 @@ sub _handle_unknown {
         $test_name = 'NO TEST NAME' unless defined $test_name;
 
         my $todo;
-        if ($test_name =~ s/ # TODO (.+)$//) {
+        if ( $test_name =~ s/ # TODO (.+)$// ) {
             $todo = $1;
         }
 

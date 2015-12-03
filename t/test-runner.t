@@ -10,15 +10,14 @@ use Test::More;
 use Test::Differences;
 
 test_formatter($_) for <t/test-data/*>;
-#test_formatter($_) for 't/test-data/test-class-moose-mixed';
 
 done_testing;
 
 sub test_formatter {
     my $data_dir  = shift;
-    my $input     = file($data_dir, 'input.st');
-    my $expected  = file($data_dir, 'expected.txt')->slurp;
-    my $tmp_dir   = dir(tempdir(CLEANUP => 1));
+    my $input     = file( $data_dir, 'input.st' );
+    my $expected  = file( $data_dir, 'expected.txt' )->slurp;
+    my $tmp_dir   = dir( tempdir( CLEANUP => 1 ) );
     my $out_file  = $tmp_dir->file('actual.txt');
     my $prove     = 'prove --lib --merge --verbose';
     my $formatter = '--formatter TAP::Formatter::TeamCity';
@@ -30,10 +29,12 @@ sub test_formatter {
     # so we chomp off the correct number of lines
 
     my @actual = $out_file->slurp;
-    my $pop = $actual[-3] =~ /Parse errors:/? 7:
-        $actual[-1] =~ /^Result: NOTESTS$/? 2:
-        $is_ok? 3: 8;
-    pop @actual for 1..$pop;
+    my $pop
+        = $actual[-3] =~ /Parse errors:/     ? 7
+        : $actual[-1] =~ /^Result: NOTESTS$/ ? 2
+        : $is_ok                             ? 3
+        :                                      8;
+    pop @actual for 1 .. $pop;
     my $actual = join q{}, @actual;
 
     # These hacks exist to replace user-specific paths with some sort of fixed
