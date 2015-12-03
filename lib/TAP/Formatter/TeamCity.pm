@@ -16,7 +16,7 @@ use base qw(TAP::Formatter::Base);
 my $LastTestName;
 my $LastTestResult;
 my $IsLastSuiteEmpty;
-my @SuiteNameStack    = ();
+my @SuiteNameStack;
 my $TestOutputBuffer  = q{};
 my $SuiteOutputBuffer = q{};
 
@@ -38,7 +38,7 @@ sub open_test {
 
     $self->_start_suite($test);
 
-    while ( defined( my $result = $parser->next() ) ) {
+    while ( defined( my $result = $parser->next ) ) {
         $self->_handle_event($result);
         $session->result($result);
     }
@@ -51,7 +51,7 @@ sub open_test {
             $self->_recover_from_catastrophic_death;
         }
         else {
-            if ( !$self->_test_finished() && $SuiteOutputBuffer ) {
+            if ( !$self->_test_finished && $SuiteOutputBuffer ) {
                 my $suite_type = @SuiteNameStack == 1 ? 'file' : 'subtest';
                 my $test_name
                     = "Test died before reaching end of $suite_type";
@@ -69,11 +69,11 @@ sub open_test {
                 $self->_test_started($test_result);
                 $TestOutputBuffer  = $SuiteOutputBuffer;
                 $SuiteOutputBuffer = q{};
-                $self->_test_finished();
+                $self->_test_finished;
             }
             {
                 my @copy = @SuiteNameStack;
-                $self->_finish_suite() for @copy;
+                $self->_finish_suite for @copy;
             }
         }
     }
@@ -114,10 +114,10 @@ sub _recover_from_catastrophic_death {
         );
         $self->_test_started($test_result);
     }
-    $self->_test_finished();
+    $self->_test_finished;
     {
         my @copy = @SuiteNameStack;
-        $self->_finish_suite() for @copy;
+        $self->_finish_suite for @copy;
     }
 }
 
@@ -125,7 +125,7 @@ sub _recover_from_catastrophic_death {
 
 sub _handle_event {
     my ( $self, $result ) = @_;
-    my $type    = $result->type();
+    my $type    = $result->type;
     my $handler = "_handle_$type";
 
     eval { $self->$handler($result); 1 }
@@ -164,9 +164,9 @@ sub _handle_test {
 ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _handle_comment {
     my ( $self, $result ) = @_;
-    my $comment = $result->raw();
+    my $comment = $result->raw;
     if ( $comment =~ /^\s*# Looks like you failed \d+/ ) {
-        $self->_test_finished();
+        $self->_test_finished;
         return;
     }
     $comment =~ s/^\s*#\s?//;
@@ -179,16 +179,16 @@ sub _handle_comment {
 ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _handle_unknown {
     my ( $self, $result ) = @_;
-    my $raw = $result->raw();
+    my $raw = $result->raw;
     if ( $raw =~ /^\s*# Subtest: (.*)$/ ) {
-        $self->_test_finished();
+        $self->_test_finished;
         $self->_start_suite($1);
     }
     elsif ( $raw =~ /^\s*(not )?ok (\d+)( - (.*))?$/ ) {
         my $is_ok     = !$1;
         my $test_num  = $2;
         my $test_name = $4;
-        $self->_test_finished();
+        $self->_test_finished;
         $test_name = 'NO TEST NAME' unless defined $test_name;
 
         my $todo;
@@ -214,7 +214,7 @@ sub _handle_unknown {
         }
     }
     elsif ( $raw =~ /^\s*# Looks like you failed \d+/ ) {
-        $self->_test_finished();
+        $self->_test_finished;
     }
     elsif ( $raw =~ /^\s+ok \d+ # skip (.*)$/ && !$LastTestResult ) {
 
@@ -231,7 +231,7 @@ sub _handle_unknown {
             message => $reason
         );
         $self->_finish_test('Skipped');
-        $self->_finish_suite();
+        $self->_finish_suite;
     }
     elsif ( $raw =~ /^\s*#/ ) {
         ( my $clean_raw = $raw ) =~ s/^\s*#\s?//;
@@ -254,7 +254,7 @@ sub _handle_unknown {
 ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _handle_plan {
     my ( $self, $result ) = @_;
-    unless ( $self->_test_finished() ) {
+    unless ( $self->_test_finished ) {
         if ( $result->directive eq 'SKIP' ) {
             my %name = ( name => 'Skipped' );
             teamcity_emit_build_message(
@@ -299,18 +299,18 @@ sub _emit_teamcity_test_results {
 
     my %name = ( name => $test_name );
 
-    if ( $result->has_todo() || $result->has_skip() ) {
+    if ( $result->has_todo || $result->has_skip ) {
         teamcity_emit_build_message(
             'testIgnored', %name,
-            message => $result->explanation()
+            message => $result->explanation
         );
         return;
     }
 
-    unless ( $result->is_ok() ) {
+    unless ( $result->is_ok ) {
         teamcity_emit_build_message(
             'testFailed', %name,
-            message => ( $result->is_ok() ? 'ok' : 'not ok' ),
+            message => ( $result->is_ok ? 'ok' : 'not ok' ),
             details => $buffer
         );
     }
@@ -318,9 +318,8 @@ sub _emit_teamcity_test_results {
 
 sub _compute_test_name {
     my ( $self, $result ) = @_;
-    my $description = $result->description();
-    my $test_name
-        = $description eq q{} ? $result->explanation() : $description;
+    my $description = $result->description;
+    my $test_name = $description eq q{} ? $result->explanation : $description;
     $test_name =~ s/^-\s//;
     $test_name = 'NO TEST NAME' if $test_name eq q{};
     return $test_name;
@@ -328,7 +327,7 @@ sub _compute_test_name {
 
 sub _print_raw {
     my ( $self, $result ) = @_;
-    print( $result->raw() . "\n" ) or die "Can't print to STDOUT: $!";
+    print( $result->raw . "\n" ) or die "Can't print to STDOUT: $!";
 }
 
 sub _finish_test {
@@ -372,7 +371,7 @@ sub _finish_suite {
             $self->_test_started($test_result);
             $TestOutputBuffer  = $SuiteOutputBuffer;
             $SuiteOutputBuffer = q{};
-            $self->_test_finished();
+            $self->_test_finished;
         }
         pop @SuiteNameStack;
         $SuiteOutputBuffer = q{};
@@ -445,7 +444,7 @@ your F<Build.PL> file:
     if $ENV{RUNNING_UNDER_TEAMCITY} && eval {require TAP::Formatter::TeamCity};
 
   # Generate build script as ususal:
-  $builder->create_build_script();
+  $builder->create_build_script;
 
 And then set the C<RUNNING_UNDER_TEAMCITY> environment variable to a true
 value in your TeamCity build configuration.
