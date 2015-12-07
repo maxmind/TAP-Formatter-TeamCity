@@ -45,6 +45,7 @@ use Test::Differences;
 
     my $actual = join q{}, @output;
 
+    ## no critic (RegularExpressions::ProhibitComplexRegexes)
     like(
         $actual,
         qr{

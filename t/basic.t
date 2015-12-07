@@ -17,8 +17,7 @@ done_testing;
 
 sub test_formatter {
     my $data_dir = shift;
-    my @to_run
-        = Path::Class::Rule->new->file->name(qr/\.st/)->all($data_dir);
+    my @to_run = Path::Class::Rule->new->file->name(qr/\.st/)->all($data_dir);
     my $expected = join q{},
         map { scalar $_->dir->file('expected.txt')->slurp } @to_run;
 

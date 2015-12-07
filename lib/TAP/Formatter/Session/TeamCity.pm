@@ -43,6 +43,7 @@ sub _initialize {
             1,
         );
 
+        ## no critic (InputOutput::RequireCheckedOpen, InputOutput::RequireCheckedSyscalls)
         open my $fh, '>', \$buffered;
         $self->_tc_output_handle($fh);
     }
@@ -358,8 +359,10 @@ sub close_test {
         }
     }
 
-    print ${ $self->_tc_buffered_output }
-        if $self->_is_parallel;
+    if ( $self->_is_parallel ) {
+        print ${ $self->_tc_buffered_output }
+            or die $!;
+    }
 }
 
 sub _recover_from_catastrophic_death {
