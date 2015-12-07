@@ -1,4 +1,4 @@
-##teamcity[testSuiteStarted name='t/test-data/test-class-moose-mixed/input.st']
+##teamcity[testSuiteStarted name='t/test-data/basic/test-class-moose-mixed/input.st']
 # Running tests for TAP::Formatter::TeamCity::Test::SimpleOK
 ##teamcity[testSuiteStarted name='TAP::Formatter::TeamCity::Test::SimpleOK']
     # TAP::Formatter::TeamCity::Test::SimpleOK->test_method_1()
@@ -45,4 +45,4 @@
 ##teamcity[testSuiteFinished name='TAP::Formatter::TeamCity::Test::SimpleFail']
 #   Failed test 'TAP::Formatter::TeamCity::Test::SimpleFail'
 #   at CODE line XXX.
-##teamcity[testSuiteFinished name='t/test-data/test-class-moose-mixed/input.st']
+##teamcity[testSuiteFinished name='t/test-data/basic/test-class-moose-mixed/input.st']

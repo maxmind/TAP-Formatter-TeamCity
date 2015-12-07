@@ -9,7 +9,7 @@ use Path::Class qw(dir file);
 use Test::More;
 use Test::Differences;
 
-test_formatter($_) for <t/test-data/*>;
+test_formatter($_) for <t/test-data/basic/*>;
 
 done_testing;
 

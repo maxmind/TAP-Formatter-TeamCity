@@ -1,0 +1,7 @@
+##teamcity[testSuiteStarted name='t/test-data/basic/simple-fail/input.st']
+##teamcity[testStarted name='simple-fail-msg' captureStandardOutput='true']
+#   Failed test 'simple-fail-msg'
+#   at t/test-data/basic/simple-fail/input.st line 6.
+##teamcity[testFailed name='simple-fail-msg' message='not ok' details='  Failed test |'simple-fail-msg|'|n  at t/test-data/basic/simple-fail/input.st line 6.']
+##teamcity[testFinished name='simple-fail-msg']
+##teamcity[testSuiteFinished name='t/test-data/basic/simple-fail/input.st']

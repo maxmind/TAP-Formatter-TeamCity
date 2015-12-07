@@ -1,0 +1,4 @@
+##teamcity[testSuiteStarted name='t/test-data/basic/simple-ok/input.st']
+##teamcity[testStarted name='simple-ok-msg' captureStandardOutput='true']
+##teamcity[testFinished name='simple-ok-msg']
+##teamcity[testSuiteFinished name='t/test-data/basic/simple-ok/input.st']

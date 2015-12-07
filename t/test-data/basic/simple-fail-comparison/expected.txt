@@ -1,0 +1,9 @@
+##teamcity[testSuiteStarted name='t/test-data/basic/simple-fail-comparison/input.st']
+##teamcity[testStarted name='simple-fail-comparison-msg' captureStandardOutput='true']
+#   Failed test 'simple-fail-comparison-msg'
+#   at t/test-data/basic/simple-fail-comparison/input.st line 6.
+#          got: 'a'
+#     expected: 'b'
+##teamcity[testFailed name='simple-fail-comparison-msg' message='not ok' details='  Failed test |'simple-fail-comparison-msg|'|n  at t/test-data/basic/simple-fail-comparison/input.st line 6.|n         got: |'a|'|n    expected: |'b|'']
+##teamcity[testFinished name='simple-fail-comparison-msg']
+##teamcity[testSuiteFinished name='t/test-data/basic/simple-fail-comparison/input.st']

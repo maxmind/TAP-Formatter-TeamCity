@@ -1,5 +1,5 @@
-##teamcity[testSuiteStarted name='t/test-data/skip-all/input.st']
+##teamcity[testSuiteStarted name='t/test-data/basic/skip-all/input.st']
 ##teamcity[testStarted name='Skipped' captureStandardOutput='true']
 ##teamcity[testIgnored name='Skipped' message='skip-reason']
 ##teamcity[testFinished name='Skipped']
-##teamcity[testSuiteFinished name='t/test-data/skip-all/input.st']
+##teamcity[testSuiteFinished name='t/test-data/basic/skip-all/input.st']

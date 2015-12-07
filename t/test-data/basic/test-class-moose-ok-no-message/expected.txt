@@ -1,4 +1,4 @@
-##teamcity[testSuiteStarted name='t/test-data/test-class-moose-ok-no-message/input.st']
+##teamcity[testSuiteStarted name='t/test-data/basic/test-class-moose-ok-no-message/input.st']
 # Running tests for TAP::Formatter::TeamCity::Test::OKNoMessage
 ##teamcity[testSuiteStarted name='TAP::Formatter::TeamCity::Test::OKNoMessage']
     # TAP::Formatter::TeamCity::Test::OKNoMessage->test_method_1()
@@ -7,4 +7,4 @@
 ##teamcity[testFinished name='NO TEST NAME']
 ##teamcity[testSuiteFinished name='test_method_1']
 ##teamcity[testSuiteFinished name='TAP::Formatter::TeamCity::Test::OKNoMessage']
-##teamcity[testSuiteFinished name='t/test-data/test-class-moose-ok-no-message/input.st']
+##teamcity[testSuiteFinished name='t/test-data/basic/test-class-moose-ok-no-message/input.st']
