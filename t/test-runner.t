@@ -44,6 +44,12 @@ sub test_formatter {
     $actual =~ s{(#\s+at ).+/Moose([^\s]+) line \d+}{${1}CODE line XXX}g;
     $actual =~ s{\(\@INC contains: .+?\)}{(\@INC contains: XXX)}sg;
 
+    # The error message for attempting to load a module that doesn't exist was
+    # changed in 5.18.0.
+    $expected
+        =~ s{\Q(you may need to install the SomeNoneExistingModule module) }{}g
+        if $] < 5.018;
+
     eq_or_diff_text $actual, $expected, "running test in $data_dir";
 }
 

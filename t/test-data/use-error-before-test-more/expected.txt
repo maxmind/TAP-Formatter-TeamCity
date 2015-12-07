@@ -1,8 +1,8 @@
 ##teamcity[testSuiteStarted name='t/test-data/use-error-before-test-more/input.st']
-Can't locate SomeNoneExistingModule.pm in @INC (@INC contains: XXX) at t/test-data/use-error-before-test-more/input.st line 4.
+Can't locate SomeNoneExistingModule.pm in @INC (you may need to install the SomeNoneExistingModule module) (@INC contains: XXX) at t/test-data/use-error-before-test-more/input.st line 4.
 BEGIN failed--compilation aborted at t/test-data/use-error-before-test-more/input.st line 4.
 ##teamcity[testStarted name='Test died before reaching end of file' captureStandardOutput='true']
-##teamcity[testFailed name='Test died before reaching end of file' message='not ok' details='Can|'t locate SomeNoneExistingModule.pm in @INC (@INC contains: XXX) at t/test-data/use-error-before-test-more/input.st line 4.BEGIN failed--compilation aborted at t/test-data/use-error-before-test-more/input.st line 4.']
+##teamcity[testFailed name='Test died before reaching end of file' message='not ok' details='Can|'t locate SomeNoneExistingModule.pm in @INC (you may need to install the SomeNoneExistingModule module) (@INC contains: XXX) at t/test-data/use-error-before-test-more/input.st line 4.BEGIN failed--compilation aborted at t/test-data/use-error-before-test-more/input.st line 4.']
 ##teamcity[testFinished name='Test died before reaching end of file']
 ##teamcity[testSuiteFinished name='t/test-data/use-error-before-test-more/input.st']
 
