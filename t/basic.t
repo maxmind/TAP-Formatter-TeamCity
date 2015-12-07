@@ -3,8 +3,8 @@ use warnings;
 
 use lib 't/lib';
 
-use File::Temp qw(tempdir);
-use Path::Class qw(dir file);
+use IPC::Run3 qw(run3);
+use Path::Class qw(file);
 
 use Test::More;
 use Test::Differences;
@@ -14,28 +14,29 @@ test_formatter($_) for <t/test-data/basic/*>;
 done_testing;
 
 sub test_formatter {
-    my $data_dir  = shift;
-    my $input     = file( $data_dir, 'input.st' );
-    my $expected  = file( $data_dir, 'expected.txt' )->slurp;
-    my $tmp_dir   = dir( tempdir( CLEANUP => 1 ) );
-    my $out_file  = $tmp_dir->file('actual.txt');
-    my $prove     = 'prove --lib --merge --verbose';
-    my $formatter = '--formatter TAP::Formatter::TeamCity';
+    my $data_dir = shift;
+    my $input    = file( $data_dir, 'input.st' );
+    my $expected = file( $data_dir, 'expected.txt' )->slurp;
 
-    my $is_ok = !system("$prove $formatter $input > $out_file");
+    my @prove
+        = qw( prove --lib --merge --verbose --formatter TAP::Formatter::TeamCity );
+    my ( @stdout, @stderr );
+    run3(
+        [ @prove, $input ],
+        \undef,
+        \@stdout,
+        \@stderr,
+    );
 
-    # we don't want to compare the test summary, but it is
-    # different number of lines depending on $is_ok
-    # so we chomp off the correct number of lines
-
-    my @actual = $out_file->slurp;
+    # we don't want to compare the test summary, but it has a different number
+    # of lines depending on $is_ok so we chomp off the correct number of lines
     my $summary_index
-        = $actual[-3] =~ /Parse errors:/     ? -7
-        : $actual[-1] =~ /^Result: NOTESTS$/ ? -2
-        : $is_ok                             ? -3
+        = $stdout[-3] =~ /Parse errors:/     ? -7
+        : $stdout[-1] =~ /^Result: NOTESTS$/ ? -2
+        : $? == 0                            ? -3
         :                                      -8;
-    splice @actual, $summary_index;
-    my $actual = join q{}, @actual;
+    splice @stdout, $summary_index;
+    my $actual = join q{}, @stdout;
 
     # These hacks exist to replace user-specific paths with some sort of fixed
     # test. Long term, it'd be better to test the formatter by feeding it TAP
