@@ -457,19 +457,20 @@ sub _tc_message {
     my $force_stdout = shift;
 
     my $handle = $force_stdout ? \*STDOUT : $self->_tc_output_handle;
-    print {$handle} "##teamcity[$message";
+    print {$handle} "##teamcity[$message" or die $!;
 
     if ( ref $values ) {
         for my $name ( sort keys %{$values} ) {
             my $value = $values->{$name};
-            print {$handle} qq< $name='>, _tc_escape($value), q<'>;
+            print {$handle} qq{ $name='}, _tc_escape($value), q{'}
+                or die $!;
         }
     }
     else {
-        print {$handle} q< '> . _tc_escape($values) . q<'>;
+        print {$handle} q{ '} . _tc_escape($values) . q{'} or die $!;
     }
 
-    print {$handle} "]\n";
+    print {$handle} "]\n" or die $!;
 
     return;
 }
@@ -477,9 +478,9 @@ sub _tc_message {
 sub _tc_escape {
     my ($original) = @_;
 
-    ( my $escaped = $original ) =~ s< ( ['|\]] ) ><|$1>xmsg;
-    $escaped =~ s< \n ><|n>xmsg;
-    $escaped =~ s< \r ><|r>xmsg;
+    ( my $escaped = $original ) =~ s{(['|\]])}{|$1}g;
+    $escaped =~ s{\n}{|n}g;
+    $escaped =~ s{\r}{|r}g;
 
     return $escaped;
 }
