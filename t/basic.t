@@ -20,13 +20,18 @@ sub test_formatter {
 
     my @prove
         = qw( prove --lib --merge --verbose --formatter TAP::Formatter::TeamCity );
-    my ( @stdout, @stderr );
+    my ( @stdout, $stderr );
     run3(
         [ @prove, $input ],
         \undef,
         \@stdout,
-        \@stderr,
+        \$stderr,
     );
+
+    if ($stderr) {
+        fail('got unexpected stderr');
+        diag($stderr);
+    }
 
     # we don't want to compare the test summary, but it has a different number
     # of lines depending on $is_ok so we chomp off the correct number of lines
