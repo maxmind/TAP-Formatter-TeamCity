@@ -16,10 +16,9 @@ sub open_test {
 
     my $session = TAP::Formatter::Session::TeamCity->new(
         {
-            name       => $test,
-            formatter  => $self,
-            parser     => $parser,
-            show_count => 0,
+            name      => $test,
+            formatter => $self,
+            parser    => $parser,
         }
     );
 
