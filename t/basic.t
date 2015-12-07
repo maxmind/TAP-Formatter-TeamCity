@@ -50,6 +50,8 @@ sub test_formatter {
     $actual =~ s{(#\s+at ).+/Moose([^\s]+) line \d+}{${1}CODE line XXX}g;
     $actual =~ s{\(\@INC contains: .+?\)}{(\@INC contains: XXX)}sg;
 
+    $_ =~ s{\n+$}{\n} for $actual, $expected;
+
     # The error message for attempting to load a module that doesn't exist was
     # changed in 5.18.0.
     $expected
