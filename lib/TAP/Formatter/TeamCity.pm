@@ -5,7 +5,7 @@ use 5.010;
 use strict;
 use warnings;
 
-our $VERSION = '0.005';
+our $VERSION = '0.050';
 
 use TeamCity::BuildMessages qw(:all);
 use TAP::Formatter::Session::TeamCity;
