@@ -418,17 +418,6 @@ statistics and graphs).
 
 This is very much alpha code, and is subject to change.
 
-=head1 SEE IT IN ACTION
-
-If you're not familiar with continuous integration systems (in general) or
-TeamCity (in particular), you're welcome to explore the TeamCity build server
-we use for the L<Perl::Critic> project. Just go to
-L<http://perlcritic.com:8111> and click on the "Login as a Guest" link. From
-there, you can browse the build history, review test results, and examine the
-artifacts (such as test coverage reports and performance profiles). All the
-information you see there was generated from TAP-based tests using this module
-to communicate the results to the TeamCity server.
-
 =head1 SUGGESTED USAGE
 
 The TeamCity service messages are generally not human-readable, so you
