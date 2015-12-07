@@ -5,7 +5,6 @@ use warnings;
 
 our $VERSION = '0.050';
 
-use Carp qw( croak );
 use TAP::Parser::Result::Test;
 
 use base qw(TAP::Formatter::Session);
@@ -18,6 +17,7 @@ use base qw(TAP::Formatter::Session);
         suite_name_stack
         test_output_buffer
         suite_output_buffer
+        buffered_output
         output_handle
     );
     __PACKAGE__->mk_methods(@accessors);
@@ -32,13 +32,33 @@ sub _initialize {
     $self->_tc_suite_name_stack( [] );
     $self->_tc_test_output_buffer(q{});
     $self->_tc_suite_output_buffer(q{});
-    $self->_tc_output_handle( \*STDOUT );
+
+    my $buffered = q{};
+    $self->_tc_buffered_output( \$buffered );
+
+    if ( $self->_is_parallel ) {
+        $self->_tc_message(
+            'progressMessage',
+            'starting ' . $self->name,
+            1,
+        );
+
+        open my $fh, '>', \$buffered;
+        $self->_tc_output_handle($fh);
+    }
+    else {
+        $self->_tc_output_handle( \*STDOUT );
+    }
 
     $self->_start_suite( $self->name );
 
     return $self;
 }
 ## use critic
+
+sub _is_parallel {
+    return $_[0]->formatter->jobs > 1;
+}
 
 sub result {
     my ( $self, $result ) = @_;
@@ -62,12 +82,18 @@ sub _handle_test {
             ( my $reason ) = ( $result->raw =~ /^\s*ok \d+ # skip (.*)$/ );
             my %name = ( name => 'Skipped' );
             $self->_tc_message(
-                'testStarted', %name,
-                captureStandardOutput => 'true'
+                'testStarted',
+                {
+                    %name,
+                    captureStandardOutput => 'true'
+                }
             );
             $self->_tc_message(
-                'testIgnored', %name,
-                message => $reason
+                'testIgnored',
+                {
+                    %name,
+                    message => $reason
+                },
             );
             $self->_finish_test('Skipped');
             $self->_finish_suite;
@@ -144,12 +170,18 @@ sub _handle_unknown {
         my $reason = $1;
         my %name = ( name => 'Skipped' );
         $self->_tc_message(
-            'testStarted', %name,
-            captureStandardOutput => 'true'
+            'testStarted',
+            {
+                %name,
+                captureStandardOutput => 'true'
+            },
         );
         $self->_tc_message(
-            'testIgnored', %name,
-            message => $reason
+            'testIgnored',
+            {
+                %name,
+                message => $reason,
+            },
         );
         $self->_finish_test('Skipped');
         $self->_finish_suite;
@@ -182,12 +214,18 @@ sub _handle_plan {
         if ( $result->directive eq 'SKIP' ) {
             my %name = ( name => 'Skipped' );
             $self->_tc_message(
-                'testStarted', %name,
-                captureStandardOutput => 'true'
+                'testStarted',
+                {
+                    %name,
+                    captureStandardOutput => 'true',
+                },
             );
             $self->_tc_message(
-                'testIgnored', %name,
-                message => $result->explanation,
+                'testIgnored',
+                {
+                    %name,
+                    message => $result->explanation,
+                },
             );
             $self->_finish_test('Skipped');
         }
@@ -199,8 +237,11 @@ sub _test_started {
     my $test_name = $self->_compute_test_name($result);
     my %name = ( name => $test_name );
     $self->_tc_message(
-        'testStarted', %name,
-        captureStandardOutput => 'true'
+        'testStarted',
+        {
+            %name,
+            captureStandardOutput => 'true',
+        },
     );
     $self->_tc_last_test_name($test_name);
     $self->_tc_last_test_result($result);
@@ -228,17 +269,23 @@ sub _emit_teamcity_test_results {
 
     if ( $result->has_todo || $result->has_skip ) {
         $self->_tc_message(
-            'testIgnored', %name,
-            message => $result->explanation
+            'testIgnored',
+            {
+                %name,
+                message => $result->explanation,
+            },
         );
         return;
     }
 
     unless ( $result->is_ok ) {
         $self->_tc_message(
-            'testFailed', %name,
-            message => ( $result->is_ok ? 'ok' : 'not ok' ),
-            details => $buffer
+            'testFailed',
+            {
+                %name,
+                message => ( $result->is_ok ? 'ok' : 'not ok' ),
+                details => $buffer,
+            },
         );
     }
 }
@@ -260,7 +307,7 @@ sub _print_raw {
 sub _finish_test {
     my ( $self, $test_name ) = @_;
     my %name = ( name => $test_name );
-    $self->_tc_message( 'testFinished', %name );
+    $self->_tc_message( 'testFinished', \%name );
     $self->_tc_last_test_name(undef);
     $self->_tc_last_test_result(undef);
     $self->_tc_is_last_suite_empty(0);
@@ -270,7 +317,7 @@ sub _start_suite {
     my ( $self, $suite_name ) = @_;
     push @{ $self->_tc_suite_name_stack }, $suite_name;
     $self->_tc_is_last_suite_empty(1);
-    $self->_tc_message( 'testSuiteStarted', name => $suite_name );
+    $self->_tc_message( 'testSuiteStarted', { name => $suite_name } );
 }
 
 sub close_test {
@@ -310,6 +357,9 @@ sub close_test {
             $self->_finish_suite for @copy;
         }
     }
+
+    print ${ $self->_tc_buffered_output }
+        if $self->_is_parallel;
 }
 
 sub _recover_from_catastrophic_death {
@@ -386,7 +436,7 @@ sub _finish_suite {
         pop @{ $self->_tc_suite_name_stack };
         $self->_tc_suite_output_buffer(q{});
         $self->_tc_is_last_suite_empty(0);
-        $self->_tc_message( 'testSuiteFinished', name => $name );
+        $self->_tc_message( 'testSuiteFinished', { name => $name } );
     }
     return $result;
 }
@@ -400,45 +450,28 @@ sub _fix_suite_name {
     return $suite_name;
 }
 
-{
-    my $IDENTIFIER_REGEX = qr< \A \w [\w\d]* \z >xms;
+sub _tc_message {
+    my $self         = shift;
+    my $message      = shift;
+    my $values       = shift;
+    my $force_stdout = shift;
 
-    sub _tc_message {
-        my $self    = shift;
-        my $message = shift;
-        my @values  = @_;
+    my $handle = $force_stdout ? \*STDOUT : $self->_tc_output_handle;
+    print {$handle} "##teamcity[$message";
 
-        croak 'No message specified.' if not $message;
-        croak 'No values specified.'  if not @values;
-        croak qq<"$message" is not a valid message name.>
-            if $message !~ $IDENTIFIER_REGEX;
-
-        my $handle = $self->_tc_output_handle;
-        print {$handle} "##teamcity[$message";
-
-        if ( @values == 1 ) {
-            print {$handle} q< '>, _tc_escape( $values[0] ), q<'>;
+    if ( ref $values ) {
+        for my $name ( sort keys %{$values} ) {
+            my $value = $values->{$name};
+            print {$handle} qq< $name='>, _tc_escape($value), q<'>;
         }
-        else {
-            if ( @values % 2 ) {
-                croak 'Message property given without a value.';
-            }
-
-            while (@values) {
-                my $name  = shift @values;
-                my $value = shift @values;
-
-                croak qq<"$name" is not a valid property name.>
-                    if $name !~ $IDENTIFIER_REGEX;
-
-                print {$handle} qq< $name='>, _tc_escape($value), q<'>;
-            }
-        }
-
-        print {$handle} "]\n";
-
-        return;
     }
+    else {
+        print {$handle} q< '> . _tc_escape($values) . q<'>;
+    }
+
+    print {$handle} "]\n";
+
+    return;
 }
 
 sub _tc_escape {
@@ -450,7 +483,6 @@ sub _tc_escape {
 
     return $escaped;
 }
-
 
 1;
 
