@@ -29,12 +29,12 @@ sub test_formatter {
     # so we chomp off the correct number of lines
 
     my @actual = $out_file->slurp;
-    my $pop
-        = $actual[-3] =~ /Parse errors:/     ? 7
-        : $actual[-1] =~ /^Result: NOTESTS$/ ? 2
-        : $is_ok                             ? 3
-        :                                      8;
-    pop @actual for 1 .. $pop;
+    my $summary_index
+        = $actual[-3] =~ /Parse errors:/     ? -7
+        : $actual[-1] =~ /^Result: NOTESTS$/ ? -2
+        : $is_ok                             ? -3
+        :                                      -8;
+    splice @actual, $summary_index;
     my $actual = join q{}, @actual;
 
     # These hacks exist to replace user-specific paths with some sort of fixed
