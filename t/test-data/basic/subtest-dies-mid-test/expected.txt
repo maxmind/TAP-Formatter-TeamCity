@@ -1,0 +1,13 @@
+##teamcity[testSuiteStarted name='t/test-data/basic/subtest-dies-mid-test/input.st']
+##teamcity[testStarted name='subtest-dies-mid-test-msg-1' captureStandardOutput='true']
+##teamcity[testFinished name='subtest-dies-mid-test-msg-1']
+##teamcity[testSuiteStarted name='subtest-A-name']
+##teamcity[testStarted name='subtest-dies-mid-test-msg-2' captureStandardOutput='true']
+    # Child (subtest-A-name) exited without calling finalize()
+##teamcity[testFinished name='subtest-dies-mid-test-msg-2']
+##teamcity[testSuiteFinished name='subtest-A-name']
+    #   Failed test 'subtest-A-name'
+    #   at t/test-data/basic/subtest-dies-mid-test/input.st line 10.
+    # Tests were run but no plan was declared and done_testing() was not seen.
+    # Looks like your test exited with 42 just after 2.
+##teamcity[testSuiteFinished name='t/test-data/basic/subtest-dies-mid-test/input.st']
