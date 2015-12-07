@@ -128,8 +128,10 @@ sub _handle_event {
     my $type    = $result->type;
     my $handler = "_handle_$type";
 
-    eval { $self->$handler($result); 1 }
-        || die qq{Can't handle result of type=$type: $@};
+    die qq{Can't handle result of type=$type}
+        unless $self->can($handler);
+
+    $self->$handler($result);
 }
 
 ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
