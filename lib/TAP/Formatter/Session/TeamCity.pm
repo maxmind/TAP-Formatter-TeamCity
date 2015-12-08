@@ -138,6 +138,17 @@ sub _handle_unknown {
     if ( $raw =~ /^\s*# Subtest: (.*)$/ ) {
         $self->_test_finished;
         $self->_start_suite($1);
+
+        # We want progress messages for each top-level subtest, but not for
+        # any subtests they might contain.
+        if ( $self->_is_parallel && @{ $self->_tc_suite_name_stack } == 2 ) {
+            my $name = join q{ - }, @{ $self->_tc_suite_name_stack };
+            $self->_tc_message(
+                'progressMessage',
+                "starting $name",
+                1,
+            );
+        }
     }
     elsif ( $raw =~ /^\s*(not )?ok (\d+)( - (.*))?$/ ) {
         my $is_ok     = !$1;
