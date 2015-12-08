@@ -513,10 +513,7 @@ __END__
 
 =head1 DESCRIPTION
 
-L<TAP::Formatter::Session::TeamCity> is the Session delegate used by
-L<TAP::Formatter::TeamCity>.  Since TeamCity takes care of tabulating and
-summarizing test results for you, there is no particular session-level
-reporting that is required.  So this is basically just the minimal
-L<TAP::Formatter::Session>.
+This module provides the core internals for turning TAP into TeamCity
+messages. There are no user-serviceable parts in here.
 
 =cut
