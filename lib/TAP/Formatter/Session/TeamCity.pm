@@ -62,7 +62,9 @@ sub _is_parallel {
 }
 
 sub result {
-    my ( $self, $result ) = @_;
+    my $self   = shift;
+    my $result = shift;
+
     my $type    = $result->type;
     my $handler = "_handle_$type";
 
@@ -74,25 +76,27 @@ sub result {
 
 ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _handle_test {
-    my ( $self, $result ) = @_;
+    my $self   = shift;
+    my $result = shift;
+
     unless ( $self->_test_finished ) {
         if ( $result->directive eq 'SKIP' ) {
 
             # when tcm skips methods, we get 1st a Subtest message
             # then "ok $num # skip $message"
             ( my $reason ) = ( $result->raw =~ /^\s*ok \d+ # skip (.*)$/ );
-            my %name = ( name => 'Skipped' );
+
             $self->_tc_message(
                 'testStarted',
                 {
-                    %name,
+                    name                  => 'Skipped',
                     captureStandardOutput => 'true'
                 }
             );
             $self->_tc_message(
                 'testIgnored',
                 {
-                    %name,
+                    name    => 'Skipped',
                     message => $reason
                 },
             );
@@ -109,7 +113,9 @@ sub _handle_test {
 
 ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _handle_comment {
-    my ( $self, $result ) = @_;
+    my $self   = shift;
+    my $result = shift;
+
     my $comment = $result->raw;
     if ( $comment =~ /^\s*# Looks like you failed \d+/ ) {
         $self->_test_finished;
@@ -125,7 +131,9 @@ sub _handle_comment {
 
 ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _handle_unknown {
-    my ( $self, $result ) = @_;
+    my $self   = shift;
+    my $result = shift;
+
     my $raw = $result->raw;
     if ( $raw =~ /^\s*# Subtest: (.*)$/ ) {
         $self->_test_finished;
@@ -169,18 +177,17 @@ sub _handle_unknown {
         # when tcm skips methods, we get 1st a Subtest message
         # then "ok $num # skip $message"
         my $reason = $1;
-        my %name = ( name => 'Skipped' );
         $self->_tc_message(
             'testStarted',
             {
-                %name,
+                name                  => 'Skipped',
                 captureStandardOutput => 'true'
             },
         );
         $self->_tc_message(
             'testIgnored',
             {
-                %name,
+                name    => 'Skipped',
                 message => $reason,
             },
         );
@@ -210,21 +217,22 @@ sub _handle_unknown {
 
 ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _handle_plan {
-    my ( $self, $result ) = @_;
+    my $self   = shift;
+    my $result = shift;
+
     unless ( $self->_test_finished ) {
         if ( $result->directive eq 'SKIP' ) {
-            my %name = ( name => 'Skipped' );
             $self->_tc_message(
                 'testStarted',
                 {
-                    %name,
+                    name                  => 'Skipped',
                     captureStandardOutput => 'true',
                 },
             );
             $self->_tc_message(
                 'testIgnored',
                 {
-                    %name,
+                    name    => 'Skipped',
                     message => $result->explanation,
                 },
             );
@@ -234,13 +242,14 @@ sub _handle_plan {
 }
 
 sub _test_started {
-    my ( $self, $result ) = @_;
+    my $self   = shift;
+    my $result = shift;
+
     my $test_name = $self->_compute_test_name($result);
-    my %name = ( name => $test_name );
     $self->_tc_message(
         'testStarted',
         {
-            %name,
+            name                  => $test_name,
             captureStandardOutput => 'true',
         },
     );
@@ -249,7 +258,8 @@ sub _test_started {
 }
 
 sub _test_finished {
-    my ($self) = @_;
+    my $self = shift;
+
     return unless $self->_tc_last_test_result;
     $self->_emit_teamcity_test_results(
         $self->_tc_last_test_name,
@@ -260,19 +270,19 @@ sub _test_finished {
 }
 
 sub _emit_teamcity_test_results {
-    my ( $self, $test_name, $result ) = @_;
+    my $self      = shift;
+    my $test_name = shift;
+    my $result    = shift;
 
     my $buffer = $self->_tc_test_output_buffer;
     $self->_tc_test_output_buffer(q{});
     chomp $buffer;
 
-    my %name = ( name => $test_name );
-
     if ( $result->has_todo || $result->has_skip ) {
         $self->_tc_message(
             'testIgnored',
             {
-                %name,
+                name    => $test_name,
                 message => $result->explanation,
             },
         );
@@ -283,7 +293,7 @@ sub _emit_teamcity_test_results {
         $self->_tc_message(
             'testFailed',
             {
-                %name,
+                name    => $test_name,
                 message => ( $result->is_ok ? 'ok' : 'not ok' ),
                 details => $buffer,
             },
@@ -292,7 +302,9 @@ sub _emit_teamcity_test_results {
 }
 
 sub _compute_test_name {
-    my ( $self, $result ) = @_;
+    my $self   = shift;
+    my $result = shift;
+
     my $description = $result->description;
     my $test_name = $description eq q{} ? $result->explanation : $description;
     $test_name =~ s/^-\s//;
@@ -301,7 +313,9 @@ sub _compute_test_name {
 }
 
 sub _maybe_print_raw {
-    my ( $self, $raw ) = @_;
+    my $self = shift;
+    my $raw  = shift;
+
     if ( $self->_is_parallel ) {
         $self->_tc_test_output_buffer(
             $self->_tc_test_output_buffer . "$raw\n" );
@@ -312,23 +326,26 @@ sub _maybe_print_raw {
 }
 
 sub _finish_test {
-    my ( $self, $test_name ) = @_;
-    my %name = ( name => $test_name );
-    $self->_tc_message( 'testFinished', \%name );
+    my $self      = shift;
+    my $test_name = shift;
+
+    $self->_tc_message( 'testFinished', { name => $test_name } );
     $self->_tc_last_test_name(undef);
     $self->_tc_last_test_result(undef);
     $self->_tc_is_last_suite_empty(0);
 }
 
 sub _start_suite {
-    my ( $self, $suite_name ) = @_;
+    my $self       = shift;
+    my $suite_name = shift;
+
     push @{ $self->_tc_suite_name_stack }, $suite_name;
     $self->_tc_is_last_suite_empty(1);
     $self->_tc_message( 'testSuiteStarted', { name => $suite_name } );
 }
 
 sub close_test {
-    my ($self) = @_;
+    my $self = shift;
 
     my $no_tests_message
         = 'Tests were run but no plan was declared and done_testing';
@@ -373,6 +390,7 @@ sub close_test {
 
 sub _recover_from_catastrophic_death {
     my $self = shift;
+
     if ( $self->_tc_last_test_result ) {
         my $test_num    = $self->_tc_last_test_result->number;
         my $description = $self->_tc_last_test_result->description;
@@ -415,7 +433,9 @@ sub _recover_from_catastrophic_death {
 }
 
 sub _finish_suite {
-    my ( $self, $name ) = @_;
+    my $self = shift;
+    my $name = shift;
+
     return 0 unless @{ $self->_tc_suite_name_stack };
 
     $name //= $self->_tc_suite_name_stack->[-1];
@@ -450,15 +470,6 @@ sub _finish_suite {
     return $result;
 }
 
-sub _fix_suite_name {
-    my $suite_name = pop;
-    for ($suite_name) {
-        s{/}{.}g;
-        s/::/./g;
-    }
-    return $suite_name;
-}
-
 sub _tc_message {
     my $self         = shift;
     my $message      = shift;
@@ -485,13 +496,13 @@ sub _tc_message {
 }
 
 sub _tc_escape {
-    my ($original) = @_;
+    my $str = shift;
 
-    ( my $escaped = $original ) =~ s{(['|\]])}{|$1}g;
-    $escaped =~ s{\n}{|n}g;
-    $escaped =~ s{\r}{|r}g;
+    ( my $esc = $str ) =~ s{(['|\]])}{|$1}g;
+    $esc =~ s{\n}{|n}g;
+    $esc =~ s{\r}{|r}g;
 
-    return $escaped;
+    return $esc;
 }
 
 1;

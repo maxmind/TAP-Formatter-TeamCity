@@ -12,11 +12,13 @@ use TAP::Formatter::Session::TeamCity;
 use base qw(TAP::Formatter::Base);
 
 sub open_test {
-    my ( $self, $test, $parser ) = @_;
+    my $self      = shift;
+    my $test_name = shift;
+    my $parser    = shift;
 
     my $session = TAP::Formatter::Session::TeamCity->new(
         {
-            name      => $test,
+            name      => $test_name,
             formatter => $self,
             parser    => $parser,
         }
