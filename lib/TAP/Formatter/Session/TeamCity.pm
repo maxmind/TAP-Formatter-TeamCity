@@ -129,7 +129,7 @@ sub _handle_comment {
     $self->_maybe_print_raw( $result->raw );
 }
 
-## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines, Subroutines::ProhibitExcessComplexity)
 sub _handle_unknown {
     my $self   = shift;
     my $result = shift;
