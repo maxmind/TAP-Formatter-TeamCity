@@ -120,7 +120,7 @@ sub _handle_comment {
     return if $comment =~ /^\s*$/;
     $self->_tc_test_output_buffer(
         $self->_tc_test_output_buffer . "$comment\n" );
-    $self->_print_raw($result);
+    $self->_maybe_print_raw( $result->raw );
 }
 
 ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
@@ -194,16 +194,16 @@ sub _handle_unknown {
         $self->_tc_test_output_buffer(
             $self->_tc_test_output_buffer . "$clean_raw\n" )
             if $self->_tc_last_test_result;
-        $self->_print_raw($result);
+        $self->_maybe_print_raw( $result->raw );
     }
     elsif ($raw =~ qr{\[checked\] .+$}
         or $raw =~ qr{Deep recursion on subroutine "B::Deparse} ) {
-        $self->_print_raw("# $raw\n");
+        $self->_maybe_print_raw("# $raw\n");
     }
     elsif ( $raw !~ /^\s*$/ ) {
         $self->_tc_suite_output_buffer(
             $self->_tc_suite_output_buffer . $raw );
-        $self->_print_raw($result)
+        $self->_maybe_print_raw( $result->raw )
             unless $raw =~ /^\s*\d+\.\.\d+(?: # SKIP.*)?$/;
     }
 }
@@ -300,9 +300,15 @@ sub _compute_test_name {
     return $test_name;
 }
 
-sub _print_raw {
-    my ( $self, $result ) = @_;
-    print( $result->raw . "\n" ) or die "Can't print to STDOUT: $!";
+sub _maybe_print_raw {
+    my ( $self, $raw ) = @_;
+    if ( $self->_is_parallel ) {
+        $self->_tc_test_output_buffer(
+            $self->_tc_test_output_buffer . "$raw\n" );
+    }
+    else {
+        print "$raw\n" or die "Can't print to STDOUT: $!";
+    }
 }
 
 sub _finish_test {
