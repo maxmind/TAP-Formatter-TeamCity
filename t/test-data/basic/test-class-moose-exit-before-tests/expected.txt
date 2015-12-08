@@ -3,8 +3,8 @@
 ##teamcity[testSuiteStarted name='TAP::Formatter::TeamCity::Test::ExitFast']
     # TAP::Formatter::TeamCity::Test::ExitFast->test_method_1()
 ##teamcity[testSuiteStarted name='test_method_1']
-##teamcity[testStarted name='Test died before reaching end of subtest' captureStandardOutput='true']
-##teamcity[testFailed name='Test died before reaching end of subtest' message='not ok' details='    1..1']
+##teamcity[testStarted captureStandardOutput='true' name='Test died before reaching end of subtest']
+##teamcity[testFailed details='    1..1' message='not ok' name='Test died before reaching end of subtest']
 ##teamcity[testFinished name='Test died before reaching end of subtest']
 ##teamcity[testSuiteFinished name='test_method_1']
 ##teamcity[testSuiteFinished name='TAP::Formatter::TeamCity::Test::ExitFast']

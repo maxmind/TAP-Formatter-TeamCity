@@ -3,7 +3,7 @@
 ##teamcity[testSuiteStarted name='TAP::Formatter::TeamCity::Test::OKNoMessage']
     # TAP::Formatter::TeamCity::Test::OKNoMessage->test_method_1()
 ##teamcity[testSuiteStarted name='test_method_1']
-##teamcity[testStarted name='NO TEST NAME' captureStandardOutput='true']
+##teamcity[testStarted captureStandardOutput='true' name='NO TEST NAME']
 ##teamcity[testFinished name='NO TEST NAME']
 ##teamcity[testSuiteFinished name='test_method_1']
 ##teamcity[testSuiteFinished name='TAP::Formatter::TeamCity::Test::OKNoMessage']

@@ -1,7 +1,6 @@
 requires "TAP::Formatter::Base" => "0";
 requires "TAP::Formatter::Session" => "0";
 requires "TAP::Parser::Result::Test" => "0";
-requires "TeamCity::BuildMessages" => "0";
 requires "base" => "0";
 requires "perl" => "5.010";
 requires "strict" => "0";
@@ -10,11 +9,12 @@ requires "warnings" => "0";
 on 'test' => sub {
   requires "ExtUtils::MakeMaker" => "0";
   requires "File::Spec" => "0";
-  requires "File::Temp" => "0";
+  requires "IPC::Run3" => "0";
   requires "Path::Class" => "0";
+  requires "Path::Class::Rule" => "0";
   requires "Test::Class::Moose" => "0";
   requires "Test::Differences" => "0";
-  requires "Test::More" => "0.96";
+  requires "Test::More" => "0.98";
   requires "lib" => "0";
   requires "perl" => "5.010";
 };

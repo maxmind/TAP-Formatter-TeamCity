@@ -1,4 +1,4 @@
 ##teamcity[testSuiteStarted name='t/test-data/basic/ok-no-message/input.st']
-##teamcity[testStarted name='NO TEST NAME' captureStandardOutput='true']
+##teamcity[testStarted captureStandardOutput='true' name='NO TEST NAME']
 ##teamcity[testFinished name='NO TEST NAME']
 ##teamcity[testSuiteFinished name='t/test-data/basic/ok-no-message/input.st']
