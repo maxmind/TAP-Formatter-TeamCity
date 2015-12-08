@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.05     2015-12-08
+
 * This release is nearly a rewrite from prior releases. Changes include:
 
 * Added tests for many different scenarios.
