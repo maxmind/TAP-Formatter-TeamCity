@@ -20,7 +20,8 @@ sub test_formatter {
     my $test_dir    = shift;
     my $is_parallel = shift;
 
-    my @t_files = Path::Class::Rule->new->file->name(qr/\.st/)->all($test_dir);
+    my @t_files
+        = Path::Class::Rule->new->file->name(qr/\.st/)->all($test_dir);
 
     my @prove
         = qw( prove --lib --merge --verbose --formatter TAP::Formatter::TeamCity );
@@ -84,8 +85,9 @@ sub _test_parallel_output {
 
     for my $t_file ( @{$t_files} ) {
         my $expected_lines_re = join "\n",
-            map { qr/ ^ \Q$_\E $ \n /xm }
-            grep { ! / ^ #\ .+ /xm }
+            map  { qr/ ^ \Q$_\E $ \n /xm }
+            grep { !/ ^ #\ .+ /xm }
+            ## no critic (BuiltinFunctions::ProhibitComplexMappings)
             map { chomp; $_ } $t_file->dir->file('expected.txt')->slurp;
 
         like(
@@ -101,16 +103,16 @@ sub _test_parallel_output {
 }
 
 sub _test_sequential_output {
-    my $t_files  = shift;
-    my $actual = shift;
+    my $t_files = shift;
+    my $actual  = shift;
 
     my $expected = join q{},
         map { scalar $_->dir->file('expected.txt')->slurp } @{$t_files};
 
     $_ =~ s{\n+$}{\n} for $actual, $expected;
 
-    _clean_actual(\$actual);
-    _clean_expected(\$expected);
+    _clean_actual( \$actual );
+    _clean_expected( \$expected );
 
     eq_or_diff_text( $actual, $expected, 'actual output vs expected' );
 }
