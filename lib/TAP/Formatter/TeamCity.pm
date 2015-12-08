@@ -5,7 +5,7 @@ use 5.010;
 use strict;
 use warnings;
 
-our $VERSION = '0.050';
+our $VERSION = '0.05';
 
 use TAP::Formatter::Session::TeamCity;
 
