@@ -12,6 +12,8 @@
 
 * Made the formatter hide deep recursion warnings triggered by Devel::Cover.
 
+* Made the formatter work when running tests in parallel.
+
 
 0.04    2009-09-09
 
