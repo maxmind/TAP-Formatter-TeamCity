@@ -198,7 +198,7 @@ sub _handle_unknown {
     }
     elsif ($raw =~ qr{\[checked\] .+$}
         or $raw =~ qr{Deep recursion on subroutine "B::Deparse} ) {
-        print("# $raw\n") or die "Can't print to STDOUT: $!";
+        $self->_print_raw("# $raw\n");
     }
     elsif ( $raw !~ /^\s*$/ ) {
         $self->_tc_suite_output_buffer(
