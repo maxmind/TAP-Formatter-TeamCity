@@ -12,7 +12,7 @@ use Test::Differences;
 
 test_formatter($_) for <t/test-data/basic/*>;
 test_formatter('t/test-data/basic');
-test_formatter( 't/test-data/basic', 'in parallel' );
+test_formatter( 't/test-data/basic', q{ in parallel} );
 
 done_testing;
 
@@ -20,57 +20,78 @@ sub test_formatter {
     my $test_dir    = shift;
     my $is_parallel = shift;
 
-    my @t_files
-        = Path::Class::Rule->new->file->name(qr/\.st/)->all($test_dir);
+    subtest(
+        $test_dir . ( $is_parallel // q{} ),
+        sub {
 
-    my @prove
-        = qw( prove --lib --merge --verbose --formatter TAP::Formatter::TeamCity );
-    push @prove, qw( -j 2 ) if $is_parallel;
+            my @t_files
+                = Path::Class::Rule->new->file->name(qr/\.st/)
+                ->all($test_dir);
 
-    my ( @stdout, $stderr );
-    run3(
-        [ @prove, @t_files ],
-        \undef,
-        \@stdout,
-        \$stderr,
-    );
+            my @prove
+                = qw( prove --lib --merge --verbose --formatter TAP::Formatter::TeamCity );
+            push @prove, qw( -j 2 ) if $is_parallel;
 
-    if ($stderr) {
-        fail('got unexpected stderr');
-        diag($stderr);
-    }
+            my ( @stdout, $stderr );
+            run3(
+                [ @prove, @t_files ],
+                \undef,
+                \@stdout,
+                \$stderr,
+            );
 
-    # we don't want to compare the test summary, but it has a different number
-    # of lines depending on $is_ok so we chomp off the correct number of lines
-    my @output;
-    for my $l (@stdout) {
-        last
-            if $l =~ /Parse errors:/
-            || $l =~ /^Files=\d+/
-            || $l =~ /^Test Summary Report/
-            || $l =~ /^All tests successful\./;
+            if ($stderr) {
+                fail('got unexpected stderr');
+                diag($stderr);
+            }
 
-        push @output, $l;
-    }
+            # we don't want to compare the test summary, but it has a different number
+            # of lines depending on $is_ok so we just stop collecting lines once we
+            # hit something that looks like that summary.
+            my @output;
+            for my $l (@stdout) {
+                last
+                    if $l =~ /Parse errors:/
+                    || $l =~ /^Files=\d+/
+                    || $l =~ /^Test Summary Report/
+                    || $l =~ /^All tests successful\./;
 
-    my $actual = join q{}, @output;
+                push @output, _remove_timestamp($l);
+            }
 
-    if ($is_parallel) {
-        subtest(
-            "parallel run of $test_dir",
-            sub {
+            my $actual = join q{}, @output;
+
+            if ($is_parallel) {
                 _test_parallel_output( \@t_files, $actual );
             }
-        );
-    }
-    else {
-        subtest(
-            "sequential run of $test_dir",
-            sub {
+            else {
                 _test_sequential_output( \@t_files, $actual );
             }
+        }
+    );
+}
+
+sub _remove_timestamp {
+    my $line = shift;
+
+    # We only touch TC message lines that include name/value pairs
+    return $line unless $line =~ /^\Q##teamcity[\E[^ ]+ [^=]+='[^']*'/;
+
+    my $ok = ok(
+        $line =~ s/ timestamp='([^']+)'//,
+        'teamcity directive line has a timestamp'
+    ) or diag($line);
+
+    if ($ok) {
+        my $ts = $1;
+        like(
+            $ts,
+            qr/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}$/,
+            'timestamp matches expected format'
         );
     }
+
+    return $line;
 }
 
 sub _test_parallel_output {

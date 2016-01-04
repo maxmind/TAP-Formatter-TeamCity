@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+* All TeamCity messages with name/value pairs now include a timestamp value as
+  well. This lets TeamCity calculate test length.
+
+
 0.05     2015-12-08
 
 * This release is nearly a rewrite from prior releases. Changes include:

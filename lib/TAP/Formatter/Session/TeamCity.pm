@@ -6,6 +6,7 @@ use warnings;
 our $VERSION = '0.06';
 
 use TAP::Parser::Result::Test;
+use Time::HiRes qw( time );
 
 use base qw(TAP::Formatter::Session);
 
@@ -488,22 +489,44 @@ sub _tc_message {
     my $force_stdout = shift;
 
     my $handle = $force_stdout ? \*STDOUT : $self->_tc_output_handle;
-    print {$handle} "##teamcity[$message" or die $!;
+
+    my $tc_msg = "##teamcity[$message";
 
     if ( ref $values ) {
         for my $name ( sort keys %{$values} ) {
             my $value = $values->{$name};
-            print {$handle} qq{ $name='}, _tc_escape($value), q{'}
-                or die $!;
+            $tc_msg .= qq{ $name='} . _tc_escape($value) . q{'};
         }
+
+        $tc_msg .= $self->_tc_message_timestamp
+            unless ref $values && $values->{timestamp};
     }
     else {
-        print {$handle} q{ '} . _tc_escape($values) . q{'} or die $!;
+        $tc_msg .= q{ '} . _tc_escape($values) . q{'} or die $!;
     }
 
-    print {$handle} "]\n" or die $!;
+    $tc_msg .= "]\n";
+
+    print {$handle} $tc_msg or die $!;
 
     return;
+}
+
+sub _tc_message_timestamp {
+    my $now = time;
+
+    my ( $s, $mi, $h, $d, $mo, $y ) = ( gmtime($now) )[ 0 .. 5 ];
+
+    my $float = ( $now - int($now) );
+    return sprintf(
+        q{ timestamp='%4d-%02d-%02dT%02d:%02d:%02d.%03d'},
+        $y + 1900, $mo + 1, $d,
+        $h, $mi, $s,
+
+        # We only need 3 places of precision so if we multiply it be 1,000 we
+        # can just treat it as an integer.
+        $float * 1000,
+    );
 }
 
 sub _tc_escape {
