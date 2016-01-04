@@ -1,5 +1,5 @@
 ##teamcity[testSuiteStarted name='t/test-data/basic/exit-before-first-test/input.st']
 ##teamcity[testStarted captureStandardOutput='true' name='Test died before reaching end of file']
-##teamcity[testFailed details='' message='not ok' name='Test died before reaching end of file']
+##teamcity[testFailed message='not ok' name='Test died before reaching end of file']
 ##teamcity[testFinished name='Test died before reaching end of file']
 ##teamcity[testSuiteFinished name='t/test-data/basic/exit-before-first-test/input.st']

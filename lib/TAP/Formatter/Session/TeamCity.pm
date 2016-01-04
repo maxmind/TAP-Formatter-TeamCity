@@ -305,9 +305,9 @@ sub _emit_teamcity_test_results {
         $self->_tc_message(
             'testFailed',
             {
-                name    => $test_name,
+                name => $test_name,
                 message => ( $result->is_ok ? 'ok' : 'not ok' ),
-                details => $buffer,
+                ( $buffer ? ( details => $buffer ) : () ),
             },
         );
     }
