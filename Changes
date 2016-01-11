@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.09     2016-01-11
+
 * All TeamCity messages with name/value pairs now include a flowId value as
   well. This is always the same as the name of the test file being run, which
   works fine as long as you do not fork additional processes from inside a .t

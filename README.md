@@ -4,7 +4,7 @@ TAP::Formatter::TeamCity - Emit test results as TeamCity build messages
 
 # VERSION
 
-version 0.08
+version 0.09
 
 # SYNOPSIS
 
