@@ -3,7 +3,7 @@ package TAP::Formatter::Session::TeamCity;
 use strict;
 use warnings;
 
-our $VERSION = '0.09';
+our $VERSION = '0.08_01';
 
 use TAP::Parser::Result::Test;
 use Time::HiRes qw( time );
@@ -500,6 +500,8 @@ sub _tc_message {
 
         $tc_msg .= $self->_tc_message_timestamp
             unless ref $values && $values->{timestamp};
+        $tc_msg .= $self->_tc_message_flow_id
+            unless ref $values && $values->{flowId};
     }
     else {
         $tc_msg .= q{ '} . _tc_escape($values) . q{'} or die $!;
@@ -527,6 +529,11 @@ sub _tc_message_timestamp {
         # can just treat it as an integer.
         $float * 1000,
     );
+}
+
+sub _tc_message_flow_id {
+    my $self = shift;
+    return q{ flowId='} . _tc_escape( $self->name ) . q{'};
 }
 
 sub _tc_escape {

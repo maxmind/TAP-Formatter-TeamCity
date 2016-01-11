@@ -1,10 +1,10 @@
-##teamcity[testSuiteStarted name='t/test-data/basic/test-class-moose-ok-no-message/input.st']
+##teamcity[testSuiteStarted name='t/test-data/basic/test-class-moose-ok-no-message/input.st' flowId='t/test-data/basic/test-class-moose-ok-no-message/input.st']
 # Running tests for TAP::Formatter::TeamCity::Test::OKNoMessage
-##teamcity[testSuiteStarted name='TAP::Formatter::TeamCity::Test::OKNoMessage']
+##teamcity[testSuiteStarted name='TAP::Formatter::TeamCity::Test::OKNoMessage' flowId='t/test-data/basic/test-class-moose-ok-no-message/input.st']
     # TAP::Formatter::TeamCity::Test::OKNoMessage->test_method_1()
-##teamcity[testSuiteStarted name='test_method_1']
-##teamcity[testStarted captureStandardOutput='true' name='NO TEST NAME']
-##teamcity[testFinished name='NO TEST NAME']
-##teamcity[testSuiteFinished name='test_method_1']
-##teamcity[testSuiteFinished name='TAP::Formatter::TeamCity::Test::OKNoMessage']
-##teamcity[testSuiteFinished name='t/test-data/basic/test-class-moose-ok-no-message/input.st']
+##teamcity[testSuiteStarted name='test_method_1' flowId='t/test-data/basic/test-class-moose-ok-no-message/input.st']
+##teamcity[testStarted captureStandardOutput='true' name='NO TEST NAME' flowId='t/test-data/basic/test-class-moose-ok-no-message/input.st']
+##teamcity[testFinished name='NO TEST NAME' flowId='t/test-data/basic/test-class-moose-ok-no-message/input.st']
+##teamcity[testSuiteFinished name='test_method_1' flowId='t/test-data/basic/test-class-moose-ok-no-message/input.st']
+##teamcity[testSuiteFinished name='TAP::Formatter::TeamCity::Test::OKNoMessage' flowId='t/test-data/basic/test-class-moose-ok-no-message/input.st']
+##teamcity[testSuiteFinished name='t/test-data/basic/test-class-moose-ok-no-message/input.st' flowId='t/test-data/basic/test-class-moose-ok-no-message/input.st']

@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+* All TeamCity messages with name/value pairs now include a flowId value as
+  well. This is always the same as the name of the test file being run, which
+  works fine as long as you do not fork additional processes from inside a .t
+  file.
+
+
 0.08     2016-01-04
 
 * All TeamCity messages with name/value pairs now include a timestamp value as

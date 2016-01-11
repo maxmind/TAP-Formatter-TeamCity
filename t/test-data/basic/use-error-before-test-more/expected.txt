@@ -1,8 +1,8 @@
-##teamcity[testSuiteStarted name='t/test-data/basic/use-error-before-test-more/input.st']
+##teamcity[testSuiteStarted name='t/test-data/basic/use-error-before-test-more/input.st' flowId='t/test-data/basic/use-error-before-test-more/input.st']
 Can't locate SomeNoneExistingModule.pm in @INC (you may need to install the SomeNoneExistingModule module) (@INC contains: XXX) at t/test-data/basic/use-error-before-test-more/input.st line 4.
 BEGIN failed--compilation aborted at t/test-data/basic/use-error-before-test-more/input.st line 4.
-##teamcity[testStarted captureStandardOutput='true' name='Test died before reaching end of file']
-##teamcity[testFailed details='Can|'t locate SomeNoneExistingModule.pm in @INC (you may need to install the SomeNoneExistingModule module) (@INC contains: XXX) at t/test-data/basic/use-error-before-test-more/input.st line 4.BEGIN failed--compilation aborted at t/test-data/basic/use-error-before-test-more/input.st line 4.' message='not ok' name='Test died before reaching end of file']
-##teamcity[testFinished name='Test died before reaching end of file']
-##teamcity[testSuiteFinished name='t/test-data/basic/use-error-before-test-more/input.st']
+##teamcity[testStarted captureStandardOutput='true' name='Test died before reaching end of file' flowId='t/test-data/basic/use-error-before-test-more/input.st']
+##teamcity[testFailed details='Can|'t locate SomeNoneExistingModule.pm in @INC (you may need to install the SomeNoneExistingModule module) (@INC contains: XXX) at t/test-data/basic/use-error-before-test-more/input.st line 4.BEGIN failed--compilation aborted at t/test-data/basic/use-error-before-test-more/input.st line 4.' message='not ok' name='Test died before reaching end of file' flowId='t/test-data/basic/use-error-before-test-more/input.st']
+##teamcity[testFinished name='Test died before reaching end of file' flowId='t/test-data/basic/use-error-before-test-more/input.st']
+##teamcity[testSuiteFinished name='t/test-data/basic/use-error-before-test-more/input.st' flowId='t/test-data/basic/use-error-before-test-more/input.st']
 

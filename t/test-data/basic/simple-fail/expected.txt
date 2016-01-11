@@ -1,7 +1,7 @@
-##teamcity[testSuiteStarted name='t/test-data/basic/simple-fail/input.st']
-##teamcity[testStarted captureStandardOutput='true' name='simple-fail-msg']
+##teamcity[testSuiteStarted name='t/test-data/basic/simple-fail/input.st' flowId='t/test-data/basic/simple-fail/input.st']
+##teamcity[testStarted captureStandardOutput='true' name='simple-fail-msg' flowId='t/test-data/basic/simple-fail/input.st']
 #   Failed test 'simple-fail-msg'
 #   at t/test-data/basic/simple-fail/input.st line 6.
-##teamcity[testFailed details='  Failed test |'simple-fail-msg|'|n  at t/test-data/basic/simple-fail/input.st line 6.' message='not ok' name='simple-fail-msg']
-##teamcity[testFinished name='simple-fail-msg']
-##teamcity[testSuiteFinished name='t/test-data/basic/simple-fail/input.st']
+##teamcity[testFailed details='  Failed test |'simple-fail-msg|'|n  at t/test-data/basic/simple-fail/input.st line 6.' message='not ok' name='simple-fail-msg' flowId='t/test-data/basic/simple-fail/input.st']
+##teamcity[testFinished name='simple-fail-msg' flowId='t/test-data/basic/simple-fail/input.st']
+##teamcity[testSuiteFinished name='t/test-data/basic/simple-fail/input.st' flowId='t/test-data/basic/simple-fail/input.st']
