@@ -31,7 +31,10 @@ before_install:
   - eval $(curl https://travis-perl.github.io/init) --auto
 notifications:
   email:
+    on_failure: always
+    on_success: change
     recipients:
       - dev-ci@maxmind.com
-    on_success: change
-    on_failure: always
+  slack:
+    rooms:
+      secure: "ez6sT1x5iWAFhg7P3Ky6rGeCym60GgcXaMsVdrJIIGx3d36j229AnKqmWBEKu1LJqYZBTdhT8MlMbMiLskhdy4nbMHhRVGO1ZHzhnp4AGzNH2yUXUfByk3ZCsDsvpXziRVI6Dg73MyXGEZj8c8LNl2mNiLLcKBl6b9kkjMzVZsYFH7hnJIl20NL5jS1ALtuqjbLLzEEy8+K5I2OsUWv0mh40YUMVH5aGXLRzqdZKkGkJZS0eTqo3T5WH301QmHKle7dCzi8XnmX9TmJhA2L3WctM58IS7N2tgLBgaVcCLQwyWFCkmI3WetapLnK/ByGLgsQBjRXChVYjmrHWfAvUUvsJHiLbwG/6PSewfp0eRX5MJfmpTsM+tari8QaBxr+iw6UkOrtSWmmURd7jjn5DrO7LFmCo2S94MKm/59MNzzT4gH30J3stjrBsE2ncfwPcJYau27MoMrfxXXVsketqN/vEn830HA/4nJyvyr8btITYiMwH6DIQKZSGNTIkaGTvQddCJ0elD6PL5Xzu7dctsRPaJnuO7tbXdpNO1xv3uecdBPX7gIRPSo49W8Ko89y5gpzfbhmwvUH0gmn1mzgVl74mSO+G3a3yGGvq/RQE9xFu5MzcGdZzmpAjCf6VAWlV+Q5dnuvP7mxbL3ZHd8ACLZTAbE0ezgXYm+Slxu0OPFE=\n"
