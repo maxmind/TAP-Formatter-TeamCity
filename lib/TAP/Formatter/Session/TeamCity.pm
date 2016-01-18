@@ -362,7 +362,7 @@ sub close_test {
     my $no_tests_message
         = 'Tests were run but no plan was declared and done_testing';
     if ( $self->_tc_test_output_buffer
-        =~ /^$no_tests_message\(\) was not seen\.$/m ) {
+        =~ /^\Q$no_tests_message() was not seen.\E$/m ) {
         $self->_recover_from_catastrophic_death;
     }
     else {
@@ -452,34 +452,34 @@ sub _finish_suite {
 
     $name //= $self->_tc_suite_name_stack->[-1];
 
-    my $result = $name eq $self->_tc_suite_name_stack->[-1];
-    if ($result) {
-        if ( $self->_tc_is_last_suite_empty ) {
-            my $suite_type
-                = @{ $self->_tc_suite_name_stack } == 1 ? 'file' : 'subtest';
-            my $test_name   = "Test died before reaching end of $suite_type";
-            my $test_result = TAP::Parser::Result::Test->new(
-                {
-                    'ok'          => 'not ok',
-                    'explanation' => q{},
-                    'directive'   => q{},
-                    'type'        => 'test',
-                    'test_num'    => 1,
-                    'description' => "- $test_name",
-                    'raw'         => "not ok 1 - $test_name",
-                }
-            );
-            $self->_test_started($test_result);
-            $self->_tc_test_output_buffer( $self->_tc_suite_output_buffer );
-            $self->_tc_suite_output_buffer(q{});
-            $self->_test_finished;
-        }
-        pop @{ $self->_tc_suite_name_stack };
+    return 0 unless $name eq $self->_tc_suite_name_stack->[-1];
+
+    if ( $self->_tc_is_last_suite_empty ) {
+        my $suite_type
+            = @{ $self->_tc_suite_name_stack } == 1 ? 'file' : 'subtest';
+        my $test_name   = "Test died before reaching end of $suite_type";
+        my $test_result = TAP::Parser::Result::Test->new(
+            {
+                'ok'          => 'not ok',
+                'explanation' => q{},
+                'directive'   => q{},
+                'type'        => 'test',
+                'test_num'    => 1,
+                'description' => "- $test_name",
+                'raw'         => "not ok 1 - $test_name",
+            }
+        );
+        $self->_test_started($test_result);
+        $self->_tc_test_output_buffer( $self->_tc_suite_output_buffer );
         $self->_tc_suite_output_buffer(q{});
-        $self->_tc_is_last_suite_empty(0);
-        $self->_tc_message( 'testSuiteFinished', { name => $name } );
+        $self->_test_finished;
     }
-    return $result;
+    pop @{ $self->_tc_suite_name_stack };
+    $self->_tc_suite_output_buffer(q{});
+    $self->_tc_is_last_suite_empty(0);
+    $self->_tc_message( 'testSuiteFinished', { name => $name } );
+
+    return 1;
 }
 
 sub _tc_message {
