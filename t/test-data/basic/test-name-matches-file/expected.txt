@@ -1,0 +1,4 @@
+##teamcity[testSuiteStarted name='t/test-data/basic/test-name-matches-file/test.st' flowId='t/test-data/basic/test-name-matches-file/test.st']
+##teamcity[testStarted captureStandardOutput='true' name='Test died before reaching end of file' flowId='t/test-data/basic/test-name-matches-file/test.st']
+##teamcity[testFinished name='Test died before reaching end of file' flowId='t/test-data/basic/test-name-matches-file/test.st']
+##teamcity[testSuiteFinished name='t/test-data/basic/test-name-matches-file/test.st' flowId='t/test-data/basic/test-name-matches-file/test.st']

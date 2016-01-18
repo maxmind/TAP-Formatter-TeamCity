@@ -10,6 +10,10 @@ use Path::Class::Rule;
 use Test::More 0.98;
 use Test::Differences;
 
+my %todo = (
+    'test-name-matches-file' => 1,
+);
+
 test_formatter($_) for <t/test-data/basic/*>;
 test_formatter('t/test-data/basic');
 test_formatter( 't/test-data/basic', q{ in parallel} );
@@ -20,6 +24,9 @@ sub test_formatter {
     my $test_dir    = shift;
     my $is_parallel = shift;
 
+    local $TODO = 'This is a known bug'
+        if $todo{ dir($test_dir)->basename };
+
     subtest(
         $test_dir . ( $is_parallel // q{} ),
         sub {
@@ -27,6 +34,9 @@ sub test_formatter {
             my @t_files
                 = Path::Class::Rule->new->file->name(qr/\.st/)
                 ->all($test_dir);
+
+            @t_files = grep { !$todo{ $_->dir->basename } } @t_files
+                if @t_files > 1;
 
             my @prove
                 = qw( prove --lib --merge --verbose --formatter TAP::Formatter::TeamCity );
