@@ -14,7 +14,7 @@ use base qw(TAP::Formatter::Session);
     my @accessors = map { '_tc_' . $_ } qw(
         last_test_name
         last_test_result
-        is_last_suite_empty
+        last_suite_is_empty
         suite_name_stack
         test_output_buffer
         suite_output_buffer
@@ -361,7 +361,7 @@ sub _finish_test {
     $self->_tc_message( 'testFinished', { name => $test_name } );
     $self->_tc_last_test_name(undef);
     $self->_tc_last_test_result(undef);
-    $self->_tc_is_last_suite_empty(0);
+    $self->_tc_last_suite_is_empty(0);
 }
 
 sub _start_suite {
@@ -369,7 +369,7 @@ sub _start_suite {
     my $suite_name = shift;
 
     push @{ $self->_tc_suite_name_stack }, $suite_name;
-    $self->_tc_is_last_suite_empty(1);
+    $self->_tc_last_suite_is_empty(1);
     $self->_tc_message( 'testSuiteStarted', { name => $suite_name } );
 }
 
@@ -470,7 +470,7 @@ sub _finish_suite {
 
     return 0 unless $name eq $self->_tc_suite_name_stack->[-1];
 
-    if ( $self->_tc_is_last_suite_empty ) {
+    if ( $self->_tc_last_suite_is_empty ) {
         my $suite_type
             = @{ $self->_tc_suite_name_stack } == 1 ? 'file' : 'subtest';
         my $test_name   = "Test died before reaching end of $suite_type";
@@ -492,7 +492,7 @@ sub _finish_suite {
     }
     pop @{ $self->_tc_suite_name_stack };
     $self->_tc_suite_output_buffer(q{});
-    $self->_tc_is_last_suite_empty(0);
+    $self->_tc_last_suite_is_empty(0);
     $self->_tc_message( 'testSuiteFinished', { name => $name } );
 
     return 1;
