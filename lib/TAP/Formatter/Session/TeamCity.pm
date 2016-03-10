@@ -377,10 +377,9 @@ sub _start_suite {
 sub close_test {
     my $self = shift;
 
-    my $no_tests_message
-        = 'Tests were run but no plan was declared and done_testing';
     if ( $self->_tc_test_output_buffer
-        =~ /^\Q$no_tests_message() was not seen.\E$/m ) {
+        =~ /^\QTests were run but no plan was declared and done_testing() was not seen.\E$/m
+        ) {
         $self->_recover_from_catastrophic_death;
     }
     else {
