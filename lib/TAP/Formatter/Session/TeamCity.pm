@@ -383,23 +383,7 @@ sub close_test {
     }
     else {
         if ( !$self->_test_finished && $self->_tc_suite_output_buffer ) {
-            my $suite_type
-                = @{ $self->_tc_suite_name_stack } == 1
-                ? 'file'
-                : 'subtest';
-            my $test_name   = "Test died before reaching end of $suite_type";
-            my $test_result = TAP::Parser::Result::Test->new(
-                {
-                    'ok'          => 'not ok',
-                    'explanation' => q{},
-                    'directive'   => q{},
-                    'type'        => 'test',
-                    'test_num'    => 1,
-                    'description' => "- $test_name",
-                    'raw'         => "not ok 1 - $test_name",
-                }
-            );
-            $self->_test_started($test_result);
+            $self->_test_started( $self->_test_died_result );
             $self->_tc_test_output_buffer( $self->_tc_suite_output_buffer );
             $self->_tc_suite_output_buffer(q{});
             $self->_test_finished;
@@ -437,21 +421,7 @@ sub _recover_from_catastrophic_death {
         );
     }
     else {
-        my $suite_type
-            = @{ $self->_tc_suite_name_stack } == 1 ? 'file' : 'subtest';
-        my $test_name   = "Test died before reaching end of $suite_type";
-        my $test_result = TAP::Parser::Result::Test->new(
-            {
-                'ok'          => 'not ok',
-                'explanation' => q{},
-                'directive'   => q{},
-                'type'        => 'test',
-                'test_num'    => 1,
-                'description' => "- $test_name",
-                'raw'         => "not ok 1 - $test_name",
-            }
-        );
-        $self->_test_started($test_result);
+        $self->_test_started( $self->_test_died_result );
     }
     $self->_test_finished;
     {
@@ -471,21 +441,7 @@ sub _finish_suite {
     return 0 unless $name eq $self->_tc_suite_name_stack->[-1];
 
     if ( $self->_tc_last_suite_is_empty ) {
-        my $suite_type
-            = @{ $self->_tc_suite_name_stack } == 1 ? 'file' : 'subtest';
-        my $test_name   = "Test died before reaching end of $suite_type";
-        my $test_result = TAP::Parser::Result::Test->new(
-            {
-                'ok'          => 'not ok',
-                'explanation' => q{},
-                'directive'   => q{},
-                'type'        => 'test',
-                'test_num'    => 1,
-                'description' => "- $test_name",
-                'raw'         => "not ok 1 - $test_name",
-            }
-        );
-        $self->_test_started($test_result);
+        $self->_test_started( $self->_test_died_result );
         $self->_tc_test_output_buffer( $self->_tc_suite_output_buffer );
         $self->_tc_suite_output_buffer(q{});
         $self->_test_finished;
@@ -505,6 +461,26 @@ sub _append_to_tc_test_output_buffer {
     $self->_tc_test_output_buffer( $self->_tc_test_output_buffer . $output );
 
     return;
+}
+
+sub _test_died_result {
+
+    # We used to try to figure out whether we died in a subtest or the top
+    # level test for the .t file by looking at the size of the test suite
+    # stack, but there's really no reliable way to figure that out with the
+    # information we have available.
+    my $test_name = 'Test died';
+    return TAP::Parser::Result::Test->new(
+        {
+            'ok'          => 'not ok',
+            'explanation' => q{},
+            'directive'   => q{},
+            'type'        => 'test',
+            'test_num'    => 1,
+            'description' => "- $test_name",
+            'raw'         => "not ok 1 - $test_name",
+        }
+    );
 }
 
 sub _tc_message {
