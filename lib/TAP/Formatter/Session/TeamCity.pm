@@ -171,8 +171,7 @@ sub _handle_unknown {
             $todo = $1;
         }
 
-        my $f = $self->_finish_suite($test_name);
-        unless ($f) {
+        unless ( $self->_finish_suite($test_name) ) {
             my $ok = $is_ok || $todo ? 'ok' : 'not ok';
             my $actual_result = TAP::Parser::Result::Test->new(
                 {
