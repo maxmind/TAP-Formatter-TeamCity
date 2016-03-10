@@ -125,8 +125,7 @@ sub _handle_comment {
     $comment =~ s/^\s*#\s?//;
     $comment =~ s/\s+$//;
     return if $comment =~ /^\s*$/;
-    $self->_tc_test_output_buffer(
-        $self->_tc_test_output_buffer . "$comment\n" );
+    $self->_append_to_tc_test_output_buffer("$comment\n");
     $self->_maybe_print_raw( $result->raw );
 }
 
@@ -210,8 +209,7 @@ sub _handle_unknown {
         ( my $clean_raw = $raw ) =~ s/^\s*#\s?//;
         $clean_raw =~ s/\s+$//;
         return if $clean_raw =~ /^\s*$/;
-        $self->_tc_test_output_buffer(
-            $self->_tc_test_output_buffer . "$clean_raw\n" )
+        $self->_append_to_tc_test_output_buffer("$clean_raw\n")
             if $self->_tc_last_test_result;
         $self->_maybe_print_raw( $result->raw );
     }
@@ -329,8 +327,7 @@ sub _maybe_print_raw {
     my $raw  = shift;
 
     if ( $self->_is_parallel ) {
-        $self->_tc_test_output_buffer(
-            $self->_tc_test_output_buffer . "$raw\n" );
+        $self->_append_to_tc_test_output_buffer("$raw\n");
     }
     else {
         print "$raw\n" or die "Can't print to STDOUT: $!";
@@ -480,6 +477,15 @@ sub _finish_suite {
     $self->_tc_message( 'testSuiteFinished', { name => $name } );
 
     return 1;
+}
+
+sub _append_to_tc_test_output_buffer {
+    my $self   = shift;
+    my $output = shift;
+
+    $self->_tc_test_output_buffer( $self->_tc_test_output_buffer . $output );
+
+    return;
 }
 
 sub _tc_message {
