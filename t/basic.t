@@ -4,11 +4,11 @@ use warnings;
 use lib 't/lib';
 
 use IPC::Run3 qw(run3);
+use List::Util qw(max);
 use Path::Class;
 use Path::Class::Rule;
 
 use Test::More 0.98;
-use Test::Differences;
 
 my %todo = (
     'test-name-matches-file' => 1,
@@ -145,7 +145,34 @@ sub _test_sequential_output {
     _clean_actual( \$actual );
     _clean_expected( \$expected );
 
-    eq_or_diff_text( $actual, $expected, 'actual output vs expected' );
+    # This splits on lines without stripping out the newline.
+    my @actual = split /(?<=\n)/, $actual;
+    my @expected = split /(?<=\n)/, $expected;
+
+    is(
+        scalar @actual, scalar @expected,
+        'actual and expected output have the same number of lines'
+    );
+
+    for my $i ( 0 .. ( max( $#actual, $#expected ) ) ) {
+        if ( defined $actual[$i] && defined $expected[$i] ) {
+            is(
+                $actual[$i], $expected[$i],
+                "actual output vs expected line $i"
+            );
+        }
+        elsif ( !defined $actual[$i] ) {
+            ok( 0, "no line $i in actual output but one was expected" );
+            diag($expected[$i]);
+        }
+        else {
+            ok(
+                0,
+                "got a line $i in actual output but none was expected"
+            );
+            diag($actual[$i]);
+        }
+    }
 }
 
 sub _clean_actual {
