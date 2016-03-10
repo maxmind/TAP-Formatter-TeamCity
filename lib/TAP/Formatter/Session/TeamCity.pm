@@ -232,8 +232,12 @@ sub _handle_unknown {
         or $raw =~ qr{Deep recursion on subroutine "B::Deparse} ) {
         $self->_maybe_print_raw("# $raw\n");
     }
-    # Anything else is random non-TAP output. We want to capture it and make
-    # sure it's emitted in the TC results.
+    # This is a test count from TAP. We don't care about that.
+    elsif ( $raw =~ /^\s+[0-9]+\.\.[0-9]+$/) {
+        return;
+    }
+    # Anything else might be random non-TAP output. We want to capture it and
+    # make sure it's emitted in the TC results if it is.
     elsif ( $raw !~ /^\s*$/ ) {
         $self->_tc_suite_output_buffer(
             $self->_tc_suite_output_buffer . $raw );
