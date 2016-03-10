@@ -126,7 +126,6 @@ sub _handle_comment {
     $comment =~ s/\s+$//;
     return unless $comment =~ /\S/;
     $self->_append_to_tc_test_output_buffer("$comment\n");
-    $self->_maybe_print_raw( $result->raw );
 }
 
 ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines, Subroutines::ProhibitExcessComplexity)
@@ -140,6 +139,7 @@ sub _handle_unknown {
     my $result = shift;
 
     my $raw = $result->raw;
+
     # We are starting a new subtest. This is a note emitted by Test::Builder
     # at the beginning of each subtest. It simply consists of "Subtest:
     # $name".
@@ -158,6 +158,7 @@ sub _handle_unknown {
             );
         }
     }
+
     # This is a test result inside a subtest.
     elsif ( $raw =~ /^\s*(not )?ok (\d+)( - (.*))?$/ ) {
         my $is_ok     = !$1;
@@ -187,6 +188,7 @@ sub _handle_unknown {
             $self->_test_started($actual_result);
         }
     }
+
     # This is a skipped test.
     elsif ( $raw =~ /^\s+ok \d+ # skip (.*)$/
         && !$self->_tc_last_test_result ) {
@@ -211,37 +213,58 @@ sub _handle_unknown {
         $self->_finish_test('Skipped');
         $self->_finish_suite;
     }
+
     # I'm not sure how this could ever happen, but it seems like it can under
     # Test::Class::Moose. The "Looks like you failed ..."  message should only
     # happen when a process exits, not when a subtest finishes.
     elsif ( $raw =~ /^\s*# Looks like you failed \d+/ ) {
         $self->_test_finished;
     }
+
     # This is a note or diag inside the subtest.
     elsif ( $raw =~ /^\s*#/ ) {
         ( my $clean_raw = $raw ) =~ s/^\s*#\s?//;
         $clean_raw =~ s/\s+$//;
         return unless $clean_raw =~ /\S/;
-        $self->_append_to_tc_test_output_buffer("$clean_raw\n")
-            if $self->_tc_last_test_result;
-        $self->_maybe_print_raw( $result->raw );
+
+        # If we have a test in the buffer, then this diagnostic message
+        # applies to that test.
+        if ( $self->_tc_last_test_result ) {
+
+            # I think this should actually be appended to the test output
+            # buffer, but that output can get eaten when a subtest dies. For
+            # now we'll just turn this into a generic TC message.
+            $self->_tc_message(
+                'message',
+                { text => "$clean_raw\n" },
+            );
+        }
+
+        # Otherwise it applies to the most recent subtest (or the .t file
+        # itself).
+        else {
+            $self->_append_to_tc_suite_output_buffer("$clean_raw\n");
+        }
     }
-    # This is noise from Devel::Cover that we are explicitly ignoring.
-    elsif ($raw =~ qr{\[checked\] .+$}
-        or $raw =~ qr{Deep recursion on subroutine "B::Deparse} ) {
-        $self->_maybe_print_raw("# $raw\n");
+
+    # This is noise from Devel::Cover that we don't want to throw out
+    # entirely, but also should not affect the test status either.
+    elsif ( $raw =~ qr/Deep recursion on subroutine "B::Deparse/ ) {
+        $self->_tc_message(
+            'message',
+            { text => $raw },
+        );
     }
+
     # This is a test count from TAP. We don't care about that.
-    elsif ( $raw =~ /^\s+[0-9]+\.\.[0-9]+$/) {
+    elsif ( $raw =~ /^\s+[0-9]+\.\.[0-9]+$/ ) {
         return;
     }
+
     # Anything else might be random non-TAP output. We want to capture it and
     # make sure it's emitted in the TC results if it is.
     elsif ( $raw =~ /\S/ ) {
-        $self->_tc_suite_output_buffer(
-            $self->_tc_suite_output_buffer . $raw );
-        $self->_maybe_print_raw( $result->raw )
-            unless $raw =~ /^\s*\d+\.\.\d+(?: # SKIP.*)?$/;
+        $self->_append_to_tc_suite_output_buffer($raw);
     }
 }
 
@@ -340,18 +363,6 @@ sub _compute_test_name {
     $test_name =~ s/^-\s//;
     $test_name = 'NO TEST NAME' if $test_name eq q{};
     return $test_name;
-}
-
-sub _maybe_print_raw {
-    my $self = shift;
-    my $raw  = shift;
-
-    if ( $self->_is_parallel ) {
-        $self->_append_to_tc_test_output_buffer("$raw\n");
-    }
-    else {
-        print "$raw\n" or die "Can't print to STDOUT: $!";
-    }
 }
 
 sub _finish_test {
@@ -459,6 +470,16 @@ sub _append_to_tc_test_output_buffer {
     my $output = shift;
 
     $self->_tc_test_output_buffer( $self->_tc_test_output_buffer . $output );
+
+    return;
+}
+
+sub _append_to_tc_suite_output_buffer {
+    my $self   = shift;
+    my $output = shift;
+
+    $self->_tc_suite_output_buffer(
+        $self->_tc_suite_output_buffer . $output );
 
     return;
 }

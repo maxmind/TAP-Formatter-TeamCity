@@ -143,11 +143,11 @@ sub _test_sequential_output {
 
     $_ =~ s{\n+$}{\n} for $actual, $expected;
 
-    _clean_actual( \$actual );
-    _clean_expected( \$expected );
+    _clean_file_references( \$actual, \$expected );
+    _clean_module_load_errors( \$expected );
 
     # This splits on lines without stripping out the newline.
-    my @actual = split /(?<=\n)/, $actual;
+    my @actual   = split /(?<=\n)/, $actual;
     my @expected = split /(?<=\n)/, $expected;
 
     is(
@@ -164,30 +164,32 @@ sub _test_sequential_output {
         }
         elsif ( !defined $actual[$i] ) {
             ok( 0, "no line $i in actual output but one was expected" );
-            diag($expected[$i]);
+            diag( $expected[$i] );
         }
         else {
             ok(
                 0,
                 "got a line $i in actual output but none was expected"
             );
-            diag($actual[$i]);
+            diag( $actual[$i] );
         }
     }
 }
 
-sub _clean_actual {
-    my $actual = shift;
+sub _clean_file_references {
 
     # These hacks exist to replace user-specific paths with some sort of fixed
     # test. Long term, it'd be better to test the formatter by feeding it TAP
     # output directly rather than running various test files with the
     # formatter in place.
-    ${$actual} =~ s{(#\s+at ).+/Moose([^\s]+) line \d+}{${1}CODE line XXX}g;
-    ${$actual} =~ s{\(\@INC contains: .+?\)}{(\@INC contains: XXX)}sg;
+    for my $output (@_) {
+        ${$output}
+            =~ s{(#\s+at ).+/Moose([^\s]+) line \d+}{${1}CODE line XXX}g;
+        ${$output} =~ s{\(\@INC contains: .+?\)}{(\@INC contains: XXX)}sg;
+    }
 }
 
-sub _clean_expected {
+sub _clean_module_load_errors {
     my $expected = shift;
 
     # The error message for attempting to load a module that doesn't exist was
