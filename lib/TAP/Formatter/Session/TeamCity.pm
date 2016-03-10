@@ -130,11 +130,19 @@ sub _handle_comment {
 }
 
 ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines, Subroutines::ProhibitExcessComplexity)
+#
+# This method will be called for all subtest output. TAP cannot parse subtests
+# at all, and it basically ignores all lines with leading spaces, treating
+# them as unknown content. We, however, need to parse that output in order to
+# generate the relevant TC events.
 sub _handle_unknown {
     my $self   = shift;
     my $result = shift;
 
     my $raw = $result->raw;
+    # We are starting a new subtest. This is a note emitted by Test::Builder
+    # at the beginning of each subtest. It simply consists of "Subtest:
+    # $name".
     if ( $raw =~ /^\s*# Subtest: (.*)$/ ) {
         $self->_test_finished;
         $self->_start_suite($1);
@@ -150,6 +158,7 @@ sub _handle_unknown {
             );
         }
     }
+    # This is a test result inside a subtest.
     elsif ( $raw =~ /^\s*(not )?ok (\d+)( - (.*))?$/ ) {
         my $is_ok     = !$1;
         my $test_num  = $2;
@@ -179,9 +188,7 @@ sub _handle_unknown {
             $self->_test_started($actual_result);
         }
     }
-    elsif ( $raw =~ /^\s*# Looks like you failed \d+/ ) {
-        $self->_test_finished;
-    }
+    # This is a skipped test.
     elsif ( $raw =~ /^\s+ok \d+ # skip (.*)$/
         && !$self->_tc_last_test_result ) {
 
@@ -205,6 +212,13 @@ sub _handle_unknown {
         $self->_finish_test('Skipped');
         $self->_finish_suite;
     }
+    # I'm not sure how this could ever happen, but it seems like it can under
+    # Test::Class::Moose. The "Looks like you failed ..."  message should only
+    # happen when a process exits, not when a subtest finishes.
+    elsif ( $raw =~ /^\s*# Looks like you failed \d+/ ) {
+        $self->_test_finished;
+    }
+    # This is a note or diag inside the subtest.
     elsif ( $raw =~ /^\s*#/ ) {
         ( my $clean_raw = $raw ) =~ s/^\s*#\s?//;
         $clean_raw =~ s/\s+$//;
@@ -213,10 +227,13 @@ sub _handle_unknown {
             if $self->_tc_last_test_result;
         $self->_maybe_print_raw( $result->raw );
     }
+    # This is noise from Devel::Cover that we are explicitly ignoring.
     elsif ($raw =~ qr{\[checked\] .+$}
         or $raw =~ qr{Deep recursion on subroutine "B::Deparse} ) {
         $self->_maybe_print_raw("# $raw\n");
     }
+    # Anything else is random non-TAP output. We want to capture it and make
+    # sure it's emitted in the TC results.
     elsif ( $raw !~ /^\s*$/ ) {
         $self->_tc_suite_output_buffer(
             $self->_tc_suite_output_buffer . $raw );
