@@ -124,7 +124,7 @@ sub _handle_comment {
     }
     $comment =~ s/^\s*#\s?//;
     $comment =~ s/\s+$//;
-    return if $comment =~ /^\s*$/;
+    return unless $comment =~ /\S/;
     $self->_append_to_tc_test_output_buffer("$comment\n");
     $self->_maybe_print_raw( $result->raw );
 }
@@ -222,7 +222,7 @@ sub _handle_unknown {
     elsif ( $raw =~ /^\s*#/ ) {
         ( my $clean_raw = $raw ) =~ s/^\s*#\s?//;
         $clean_raw =~ s/\s+$//;
-        return if $clean_raw =~ /^\s*$/;
+        return unless $clean_raw =~ /\S/;
         $self->_append_to_tc_test_output_buffer("$clean_raw\n")
             if $self->_tc_last_test_result;
         $self->_maybe_print_raw( $result->raw );
@@ -238,7 +238,7 @@ sub _handle_unknown {
     }
     # Anything else might be random non-TAP output. We want to capture it and
     # make sure it's emitted in the TC results if it is.
-    elsif ( $raw !~ /^\s*$/ ) {
+    elsif ( $raw =~ /\S/ ) {
         $self->_tc_suite_output_buffer(
             $self->_tc_suite_output_buffer . $raw );
         $self->_maybe_print_raw( $result->raw )
