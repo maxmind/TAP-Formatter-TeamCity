@@ -299,16 +299,16 @@ sub _emit_teamcity_test_results {
         return;
     }
 
-    unless ( $result->is_ok ) {
-        $self->_tc_message(
-            'testFailed',
-            {
-                name    => $test_name,
-                message => 'not ok',
-                ( $buffer ? ( details => $buffer ) : () ),
-            },
-        );
-    }
+    return if $result->is_ok;
+
+    $self->_tc_message(
+        'testFailed',
+        {
+            name    => $test_name,
+            message => 'not ok',
+            ( $buffer ? ( details => $buffer ) : () ),
+        },
+    );
 }
 
 sub _compute_test_name {
