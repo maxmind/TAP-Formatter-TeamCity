@@ -7,6 +7,7 @@ use IPC::Run3 qw(run3);
 use List::Util qw(max);
 use Path::Class;
 use Path::Class::Rule;
+use TAP::Formatter::Session::TeamCity;
 
 use Test::More 0.98;
 
