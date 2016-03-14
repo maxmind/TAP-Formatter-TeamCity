@@ -236,7 +236,7 @@ sub _handle_unknown {
             # now we'll just turn this into a generic TC message.
             $self->_tc_message(
                 'message',
-                { text => "$clean_raw\n" },
+                { text => $clean_raw },
             );
         }
 
