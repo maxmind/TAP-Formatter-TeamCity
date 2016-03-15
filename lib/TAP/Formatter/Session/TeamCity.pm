@@ -85,7 +85,7 @@ sub _handle_test {
 
             # when tcm skips methods, we get 1st a Subtest message
             # then "ok $num # skip $message"
-            ( my $reason ) = ( $result->raw =~ /^\s*ok \d+ # skip (.*)$/ );
+            ( my $reason ) = ( $result->raw =~ /^\s*ok [0-9]+ # skip (.*)$/ );
 
             $self->_tc_message(
                 'testStarted',
@@ -118,7 +118,7 @@ sub _handle_comment {
     my $result = shift;
 
     my $comment = $result->raw;
-    if ( $comment =~ /^\s*# Looks like you failed \d+/ ) {
+    if ( $comment =~ /^\s*# Looks like you failed [0-9]+/ ) {
         $self->_test_finished;
         return;
     }
@@ -160,7 +160,7 @@ sub _handle_unknown {
     }
 
     # This is a test result inside a subtest.
-    elsif ( $raw =~ /^\s*(not )?ok (\d+)( - (.*))?$/ ) {
+    elsif ( $raw =~ /^\s*(not )?ok ([0-9]+)( - (.*))?$/ ) {
         my $is_ok     = !$1;
         my $test_num  = $2;
         my $test_name = $4;
@@ -190,7 +190,7 @@ sub _handle_unknown {
     }
 
     # This is a skipped test.
-    elsif ( $raw =~ /^\s+ok \d+ # skip (.*)$/
+    elsif ( $raw =~ /^\s+ok [0-9]+ # skip (.*)$/
         && !$self->_tc_last_test_result ) {
 
         # when tcm skips methods, we get 1st a Subtest message
@@ -217,7 +217,7 @@ sub _handle_unknown {
     # I'm not sure how this could ever happen, but it seems like it can under
     # Test::Class::Moose. The "Looks like you failed ..."  message should only
     # happen when a process exits, not when a subtest finishes.
-    elsif ( $raw =~ /^\s*# Looks like you failed \d+/ ) {
+    elsif ( $raw =~ /^\s*# Looks like you failed [0-9]+/ ) {
         $self->_test_finished;
     }
 
