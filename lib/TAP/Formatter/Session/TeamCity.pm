@@ -130,10 +130,10 @@ sub _handle_comment {
 
 ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines, Subroutines::ProhibitExcessComplexity)
 #
-# This method will be called for all subtest output. TAP cannot parse subtests
-# at all, and it basically ignores all lines with leading spaces, treating
-# them as unknown content. We, however, need to parse that output in order to
-# generate the relevant TC events.
+# This method will be called for all subtest output. The default TAP formatter
+# we're subclassing cannot parse subtests at all, and it basically ignores all
+# lines with leading spaces, treating them as unknown content. We, however,
+# need to parse that output in order to generate the relevant TC events.
 sub _handle_unknown {
     my $self   = shift;
     my $result = shift;
