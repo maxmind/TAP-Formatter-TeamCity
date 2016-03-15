@@ -3,7 +3,7 @@ package TAP::Formatter::Session::TeamCity;
 use strict;
 use warnings;
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 use TAP::Parser::Result::Test;
 use Time::HiRes qw( time );
