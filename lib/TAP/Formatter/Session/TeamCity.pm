@@ -394,7 +394,7 @@ sub close_test {
     }
     else {
         if ( !$self->_test_finished && $self->_tc_suite_output_buffer ) {
-            $self->_test_started( $self->_test_died_result );
+            $self->_test_started( $self->_test_died_result_object );
             $self->_tc_test_output_buffer( $self->_tc_suite_output_buffer );
             $self->_tc_suite_output_buffer(q{});
             $self->_test_finished;
@@ -432,7 +432,7 @@ sub _recover_from_catastrophic_death {
         );
     }
     else {
-        $self->_test_started( $self->_test_died_result );
+        $self->_test_started( $self->_test_died_result_object );
     }
     $self->_test_finished;
     {
@@ -452,7 +452,7 @@ sub _finish_suite {
     return 0 unless $name eq $self->_tc_suite_name_stack->[-1];
 
     if ( $self->_tc_last_suite_is_empty ) {
-        $self->_test_started( $self->_test_died_result );
+        $self->_test_started( $self->_test_died_result_object );
         $self->_tc_test_output_buffer( $self->_tc_suite_output_buffer );
         $self->_tc_suite_output_buffer(q{});
         $self->_test_finished;
@@ -484,7 +484,7 @@ sub _append_to_tc_suite_output_buffer {
     return;
 }
 
-sub _test_died_result {
+sub _test_died_result_object {
 
     # We used to try to figure out whether we died in a subtest or the top
     # level test for the .t file by looking at the size of the test suite
