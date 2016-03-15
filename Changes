@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.10     2016-03-15
+
 * Previously a lot of test output (especially diagnostics from failures) could
   end up being doubled in the output stream. As of this release all output is
   now encoded as a TeamCity build message, and nothing should be printed
