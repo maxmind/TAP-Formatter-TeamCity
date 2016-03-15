@@ -489,7 +489,9 @@ sub _test_died_result_object {
     # We used to try to figure out whether we died in a subtest or the top
     # level test for the .t file by looking at the size of the test suite
     # stack, but there's really no reliable way to figure that out with the
-    # information we have available.
+    # information we have available. That means we just have to use this
+    # fairly generic test name instead of something like 'Test died in a
+    # subtest'.
     my $test_name = 'Test died';
     return TAP::Parser::Result::Test->new(
         {
