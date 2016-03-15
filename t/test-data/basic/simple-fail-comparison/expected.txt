@@ -1,9 +1,5 @@
 ##teamcity[testSuiteStarted name='t/test-data/basic/simple-fail-comparison/input.st' flowId='t/test-data/basic/simple-fail-comparison/input.st']
 ##teamcity[testStarted captureStandardOutput='true' name='simple-fail-comparison-msg' flowId='t/test-data/basic/simple-fail-comparison/input.st']
-#   Failed test 'simple-fail-comparison-msg'
-#   at t/test-data/basic/simple-fail-comparison/input.st line 6.
-#          got: 'a'
-#     expected: 'b'
 ##teamcity[testFailed details='  Failed test |'simple-fail-comparison-msg|'|n  at t/test-data/basic/simple-fail-comparison/input.st line 6.|n         got: |'a|'|n    expected: |'b|'' message='not ok' name='simple-fail-comparison-msg' flowId='t/test-data/basic/simple-fail-comparison/input.st']
 ##teamcity[testFinished name='simple-fail-comparison-msg' flowId='t/test-data/basic/simple-fail-comparison/input.st']
 ##teamcity[testSuiteFinished name='t/test-data/basic/simple-fail-comparison/input.st' flowId='t/test-data/basic/simple-fail-comparison/input.st']

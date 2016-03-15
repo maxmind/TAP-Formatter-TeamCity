@@ -4,11 +4,12 @@ use warnings;
 use lib 't/lib';
 
 use IPC::Run3 qw(run3);
+use List::Util qw(max);
 use Path::Class;
 use Path::Class::Rule;
+use TAP::Formatter::Session::TeamCity;
 
 use Test::More 0.98;
-use Test::Differences;
 
 my %todo = (
     'test-name-matches-file' => 1,
@@ -142,24 +143,53 @@ sub _test_sequential_output {
 
     $_ =~ s{\n+$}{\n} for $actual, $expected;
 
-    _clean_actual( \$actual );
-    _clean_expected( \$expected );
+    _clean_file_references( \$actual, \$expected );
+    _clean_module_load_errors( \$expected );
 
-    eq_or_diff_text( $actual, $expected, 'actual output vs expected' );
+    # This splits on lines without stripping out the newline.
+    my @actual   = split /(?<=\n)/, $actual;
+    my @expected = split /(?<=\n)/, $expected;
+
+    is(
+        scalar @actual, scalar @expected,
+        'actual and expected output have the same number of lines'
+    );
+
+    for my $i ( 0 .. ( max( $#actual, $#expected ) ) ) {
+        if ( defined $actual[$i] && defined $expected[$i] ) {
+            is(
+                $actual[$i], $expected[$i],
+                "actual output vs expected line $i"
+            );
+        }
+        elsif ( !defined $actual[$i] ) {
+            ok( 0, "no line $i in actual output but one was expected" );
+            diag( $expected[$i] );
+        }
+        else {
+            ok(
+                0,
+                "got a line $i in actual output but none was expected"
+            );
+            diag( $actual[$i] );
+        }
+    }
 }
 
-sub _clean_actual {
-    my $actual = shift;
+sub _clean_file_references {
 
     # These hacks exist to replace user-specific paths with some sort of fixed
     # test. Long term, it'd be better to test the formatter by feeding it TAP
     # output directly rather than running various test files with the
     # formatter in place.
-    ${$actual} =~ s{(#\s+at ).+/Moose([^\s]+) line \d+}{${1}CODE line XXX}g;
-    ${$actual} =~ s{\(\@INC contains: .+?\)}{(\@INC contains: XXX)}sg;
+    for my $output (@_) {
+        ${$output}
+            =~ s{(#\s+at ).+/Moose([^\s]+) line \d+}{${1}CODE line XXX}g;
+        ${$output} =~ s{\(\@INC contains: .+?\)}{(\@INC contains: XXX)}sg;
+    }
 }
 
-sub _clean_expected {
+sub _clean_module_load_errors {
     my $expected = shift;
 
     # The error message for attempting to load a module that doesn't exist was

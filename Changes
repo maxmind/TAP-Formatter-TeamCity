@@ -1,5 +1,13 @@
 {{$NEXT}}
 
+* Previously a lot of test output (especially diagnostics from failures) could
+  end up being doubled in the output stream. As of this release all output is
+  now encoded as a TeamCity build message, and nothing should be printed
+  directly to STDOUT. This will change how some output appears in the build
+  log, but should overall be an improvement in clarity. Reported by Mark
+  Fowler. GitHub #5.
+
+
 0.09     2016-01-11
 
 * All TeamCity messages with name/value pairs now include a flowId value as

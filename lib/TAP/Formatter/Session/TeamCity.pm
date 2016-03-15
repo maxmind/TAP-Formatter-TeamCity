@@ -14,7 +14,7 @@ use base qw(TAP::Formatter::Session);
     my @accessors = map { '_tc_' . $_ } qw(
         last_test_name
         last_test_result
-        is_last_suite_empty
+        last_suite_is_empty
         suite_name_stack
         test_output_buffer
         suite_output_buffer
@@ -85,7 +85,7 @@ sub _handle_test {
 
             # when tcm skips methods, we get 1st a Subtest message
             # then "ok $num # skip $message"
-            ( my $reason ) = ( $result->raw =~ /^\s*ok \d+ # skip (.*)$/ );
+            ( my $reason ) = ( $result->raw =~ /^\s*ok [0-9]+ # skip (.*)$/ );
 
             $self->_tc_message(
                 'testStarted',
@@ -118,24 +118,31 @@ sub _handle_comment {
     my $result = shift;
 
     my $comment = $result->raw;
-    if ( $comment =~ /^\s*# Looks like you failed \d+/ ) {
+    if ( $comment =~ /^\s*# Looks like you failed [0-9]+/ ) {
         $self->_test_finished;
         return;
     }
     $comment =~ s/^\s*#\s?//;
     $comment =~ s/\s+$//;
-    return if $comment =~ /^\s*$/;
-    $self->_tc_test_output_buffer(
-        $self->_tc_test_output_buffer . "$comment\n" );
-    $self->_maybe_print_raw( $result->raw );
+    return unless $comment =~ /\S/;
+    $self->_append_to_tc_test_output_buffer("$comment\n");
 }
 
 ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines, Subroutines::ProhibitExcessComplexity)
+#
+# This method will be called for all subtest output. The default TAP formatter
+# we're subclassing cannot parse subtests at all, and it basically ignores all
+# lines with leading spaces, treating them as unknown content. We, however,
+# need to parse that output in order to generate the relevant TC events.
 sub _handle_unknown {
     my $self   = shift;
     my $result = shift;
 
     my $raw = $result->raw;
+
+    # We are starting a new subtest. This is a note emitted by Test::Builder
+    # at the beginning of each subtest. It simply consists of "Subtest:
+    # $name".
     if ( $raw =~ /^\s*# Subtest: (.*)$/ ) {
         $self->_test_finished;
         $self->_start_suite($1);
@@ -151,7 +158,9 @@ sub _handle_unknown {
             );
         }
     }
-    elsif ( $raw =~ /^\s*(not )?ok (\d+)( - (.*))?$/ ) {
+
+    # This is a test result inside a subtest.
+    elsif ( $raw =~ /^\s*(not )?ok ([0-9]+)( - (.*))?$/ ) {
         my $is_ok     = !$1;
         my $test_num  = $2;
         my $test_name = $4;
@@ -163,8 +172,7 @@ sub _handle_unknown {
             $todo = $1;
         }
 
-        my $f = $self->_finish_suite($test_name);
-        unless ($f) {
+        unless ( $self->_finish_suite($test_name) ) {
             my $ok = $is_ok || $todo ? 'ok' : 'not ok';
             my $actual_result = TAP::Parser::Result::Test->new(
                 {
@@ -180,10 +188,9 @@ sub _handle_unknown {
             $self->_test_started($actual_result);
         }
     }
-    elsif ( $raw =~ /^\s*# Looks like you failed \d+/ ) {
-        $self->_test_finished;
-    }
-    elsif ( $raw =~ /^\s+ok \d+ # skip (.*)$/
+
+    # This is a skipped test.
+    elsif ( $raw =~ /^\s+ok [0-9]+ # skip (.*)$/
         && !$self->_tc_last_test_result ) {
 
         # when tcm skips methods, we get 1st a Subtest message
@@ -206,24 +213,58 @@ sub _handle_unknown {
         $self->_finish_test('Skipped');
         $self->_finish_suite;
     }
+
+    # I'm not sure how this could ever happen, but it seems like it can under
+    # Test::Class::Moose. The "Looks like you failed ..."  message should only
+    # happen when a process exits, not when a subtest finishes.
+    elsif ( $raw =~ /^\s*# Looks like you failed [0-9]+/ ) {
+        $self->_test_finished;
+    }
+
+    # This is a note or diag inside the subtest.
     elsif ( $raw =~ /^\s*#/ ) {
         ( my $clean_raw = $raw ) =~ s/^\s*#\s?//;
         $clean_raw =~ s/\s+$//;
-        return if $clean_raw =~ /^\s*$/;
-        $self->_tc_test_output_buffer(
-            $self->_tc_test_output_buffer . "$clean_raw\n" )
-            if $self->_tc_last_test_result;
-        $self->_maybe_print_raw( $result->raw );
+        return unless $clean_raw =~ /\S/;
+
+        # If we have a test in the buffer, then this diagnostic message
+        # applies to that test.
+        if ( $self->_tc_last_test_result ) {
+
+            # I think this should actually be appended to the test output
+            # buffer, but that output can get eaten when a subtest dies. For
+            # now we'll just turn this into a generic TC message.
+            $self->_tc_message(
+                'message',
+                { text => $clean_raw },
+            );
+        }
+
+        # Otherwise it applies to the most recent subtest (or the .t file
+        # itself).
+        else {
+            $self->_append_to_tc_suite_output_buffer("$clean_raw\n");
+        }
     }
-    elsif ($raw =~ qr{\[checked\] .+$}
-        or $raw =~ qr{Deep recursion on subroutine "B::Deparse} ) {
-        $self->_maybe_print_raw("# $raw\n");
+
+    # This is noise from Devel::Cover that we don't want to throw out
+    # entirely, but also should not affect the test status either.
+    elsif ( $raw =~ qr/Deep recursion on subroutine "B::Deparse/ ) {
+        $self->_tc_message(
+            'message',
+            { text => $raw },
+        );
     }
-    elsif ( $raw !~ /^\s*$/ ) {
-        $self->_tc_suite_output_buffer(
-            $self->_tc_suite_output_buffer . $raw );
-        $self->_maybe_print_raw( $result->raw )
-            unless $raw =~ /^\s*\d+\.\.\d+(?: # SKIP.*)?$/;
+
+    # This is a test count from TAP. We don't care about that.
+    elsif ( $raw =~ /^\s+[0-9]+\.\.[0-9]+$/ ) {
+        return;
+    }
+
+    # Anything else might be random non-TAP output. We want to capture it and
+    # make sure it's emitted in the TC results if it is.
+    elsif ( $raw =~ /\S/ ) {
+        $self->_append_to_tc_suite_output_buffer($raw);
     }
 }
 
@@ -301,16 +342,16 @@ sub _emit_teamcity_test_results {
         return;
     }
 
-    unless ( $result->is_ok ) {
-        $self->_tc_message(
-            'testFailed',
-            {
-                name    => $test_name,
-                message => 'not ok',
-                ( $buffer ? ( details => $buffer ) : () ),
-            },
-        );
-    }
+    return if $result->is_ok;
+
+    $self->_tc_message(
+        'testFailed',
+        {
+            name    => $test_name,
+            message => 'not ok',
+            ( $buffer ? ( details => $buffer ) : () ),
+        },
+    );
 }
 
 sub _compute_test_name {
@@ -324,19 +365,6 @@ sub _compute_test_name {
     return $test_name;
 }
 
-sub _maybe_print_raw {
-    my $self = shift;
-    my $raw  = shift;
-
-    if ( $self->_is_parallel ) {
-        $self->_tc_test_output_buffer(
-            $self->_tc_test_output_buffer . "$raw\n" );
-    }
-    else {
-        print "$raw\n" or die "Can't print to STDOUT: $!";
-    }
-}
-
 sub _finish_test {
     my $self      = shift;
     my $test_name = shift;
@@ -344,7 +372,7 @@ sub _finish_test {
     $self->_tc_message( 'testFinished', { name => $test_name } );
     $self->_tc_last_test_name(undef);
     $self->_tc_last_test_result(undef);
-    $self->_tc_is_last_suite_empty(0);
+    $self->_tc_last_suite_is_empty(0);
 }
 
 sub _start_suite {
@@ -352,38 +380,21 @@ sub _start_suite {
     my $suite_name = shift;
 
     push @{ $self->_tc_suite_name_stack }, $suite_name;
-    $self->_tc_is_last_suite_empty(1);
+    $self->_tc_last_suite_is_empty(1);
     $self->_tc_message( 'testSuiteStarted', { name => $suite_name } );
 }
 
 sub close_test {
     my $self = shift;
 
-    my $no_tests_message
-        = 'Tests were run but no plan was declared and done_testing';
     if ( $self->_tc_test_output_buffer
-        =~ /^\Q$no_tests_message() was not seen.\E$/m ) {
+        =~ /^\QTests were run but no plan was declared and done_testing() was not seen.\E$/m
+        ) {
         $self->_recover_from_catastrophic_death;
     }
     else {
         if ( !$self->_test_finished && $self->_tc_suite_output_buffer ) {
-            my $suite_type
-                = @{ $self->_tc_suite_name_stack } == 1
-                ? 'file'
-                : 'subtest';
-            my $test_name   = "Test died before reaching end of $suite_type";
-            my $test_result = TAP::Parser::Result::Test->new(
-                {
-                    'ok'          => 'not ok',
-                    'explanation' => q{},
-                    'directive'   => q{},
-                    'type'        => 'test',
-                    'test_num'    => 1,
-                    'description' => "- $test_name",
-                    'raw'         => "not ok 1 - $test_name",
-                }
-            );
-            $self->_test_started($test_result);
+            $self->_test_started( $self->_test_died_result_object );
             $self->_tc_test_output_buffer( $self->_tc_suite_output_buffer );
             $self->_tc_suite_output_buffer(q{});
             $self->_test_finished;
@@ -421,21 +432,7 @@ sub _recover_from_catastrophic_death {
         );
     }
     else {
-        my $suite_type
-            = @{ $self->_tc_suite_name_stack } == 1 ? 'file' : 'subtest';
-        my $test_name   = "Test died before reaching end of $suite_type";
-        my $test_result = TAP::Parser::Result::Test->new(
-            {
-                'ok'          => 'not ok',
-                'explanation' => q{},
-                'directive'   => q{},
-                'type'        => 'test',
-                'test_num'    => 1,
-                'description' => "- $test_name",
-                'raw'         => "not ok 1 - $test_name",
-            }
-        );
-        $self->_test_started($test_result);
+        $self->_test_started( $self->_test_died_result_object );
     }
     $self->_test_finished;
     {
@@ -454,32 +451,59 @@ sub _finish_suite {
 
     return 0 unless $name eq $self->_tc_suite_name_stack->[-1];
 
-    if ( $self->_tc_is_last_suite_empty ) {
-        my $suite_type
-            = @{ $self->_tc_suite_name_stack } == 1 ? 'file' : 'subtest';
-        my $test_name   = "Test died before reaching end of $suite_type";
-        my $test_result = TAP::Parser::Result::Test->new(
-            {
-                'ok'          => 'not ok',
-                'explanation' => q{},
-                'directive'   => q{},
-                'type'        => 'test',
-                'test_num'    => 1,
-                'description' => "- $test_name",
-                'raw'         => "not ok 1 - $test_name",
-            }
-        );
-        $self->_test_started($test_result);
+    if ( $self->_tc_last_suite_is_empty ) {
+        $self->_test_started( $self->_test_died_result_object );
         $self->_tc_test_output_buffer( $self->_tc_suite_output_buffer );
         $self->_tc_suite_output_buffer(q{});
         $self->_test_finished;
     }
     pop @{ $self->_tc_suite_name_stack };
     $self->_tc_suite_output_buffer(q{});
-    $self->_tc_is_last_suite_empty(0);
+    $self->_tc_last_suite_is_empty(0);
     $self->_tc_message( 'testSuiteFinished', { name => $name } );
 
     return 1;
+}
+
+sub _append_to_tc_test_output_buffer {
+    my $self   = shift;
+    my $output = shift;
+
+    $self->_tc_test_output_buffer( $self->_tc_test_output_buffer . $output );
+
+    return;
+}
+
+sub _append_to_tc_suite_output_buffer {
+    my $self   = shift;
+    my $output = shift;
+
+    $self->_tc_suite_output_buffer(
+        $self->_tc_suite_output_buffer . $output );
+
+    return;
+}
+
+sub _test_died_result_object {
+
+    # We used to try to figure out whether we died in a subtest or the top
+    # level test for the .t file by looking at the size of the test suite
+    # stack, but there's really no reliable way to figure that out with the
+    # information we have available. That means we just have to use this
+    # fairly generic test name instead of something like 'Test died in a
+    # subtest'.
+    my $test_name = 'Test died';
+    return TAP::Parser::Result::Test->new(
+        {
+            'ok'          => 'not ok',
+            'explanation' => q{},
+            'directive'   => q{},
+            'type'        => 'test',
+            'test_num'    => 1,
+            'description' => "- $test_name",
+            'raw'         => "not ok 1 - $test_name",
+        }
+    );
 }
 
 sub _tc_message {

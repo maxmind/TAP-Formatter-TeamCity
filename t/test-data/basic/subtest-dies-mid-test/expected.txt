@@ -3,11 +3,10 @@
 ##teamcity[testFinished name='subtest-dies-mid-test-msg-1' flowId='t/test-data/basic/subtest-dies-mid-test/input.st']
 ##teamcity[testSuiteStarted name='subtest-A-name' flowId='t/test-data/basic/subtest-dies-mid-test/input.st']
 ##teamcity[testStarted captureStandardOutput='true' name='subtest-dies-mid-test-msg-2' flowId='t/test-data/basic/subtest-dies-mid-test/input.st']
-    # Child (subtest-A-name) exited without calling finalize()
+##teamcity[message text='Child (subtest-A-name) exited without calling finalize()' flowId='t/test-data/basic/subtest-dies-mid-test/input.st']
 ##teamcity[testFinished name='subtest-dies-mid-test-msg-2' flowId='t/test-data/basic/subtest-dies-mid-test/input.st']
 ##teamcity[testSuiteFinished name='subtest-A-name' flowId='t/test-data/basic/subtest-dies-mid-test/input.st']
-    #   Failed test 'subtest-A-name'
-    #   at t/test-data/basic/subtest-dies-mid-test/input.st line 10.
-    # Tests were run but no plan was declared and done_testing() was not seen.
-    # Looks like your test exited with 42 just after 2.
+##teamcity[testStarted captureStandardOutput='true' name='Test died' flowId='t/test-data/basic/subtest-dies-mid-test/input.st']
+##teamcity[testFailed details='  Failed test |'subtest-A-name|'|n  at t/test-data/basic/subtest-dies-mid-test/input.st line 10.|nTests were run but no plan was declared and done_testing() was not seen.|nLooks like your test exited with 42 just after 2.' message='not ok' name='Test died' flowId='t/test-data/basic/subtest-dies-mid-test/input.st']
+##teamcity[testFinished name='Test died' flowId='t/test-data/basic/subtest-dies-mid-test/input.st']
 ##teamcity[testSuiteFinished name='t/test-data/basic/subtest-dies-mid-test/input.st' flowId='t/test-data/basic/subtest-dies-mid-test/input.st']

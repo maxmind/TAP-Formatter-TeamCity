@@ -1,11 +1,9 @@
 ##teamcity[testSuiteStarted name='t/test-data/basic/test-class-moose-exit-before-tests/input.st' flowId='t/test-data/basic/test-class-moose-exit-before-tests/input.st']
-# Running tests for TAP::Formatter::TeamCity::Test::ExitFast
 ##teamcity[testSuiteStarted name='TAP::Formatter::TeamCity::Test::ExitFast' flowId='t/test-data/basic/test-class-moose-exit-before-tests/input.st']
-    # TAP::Formatter::TeamCity::Test::ExitFast->test_method_1()
 ##teamcity[testSuiteStarted name='test_method_1' flowId='t/test-data/basic/test-class-moose-exit-before-tests/input.st']
-##teamcity[testStarted captureStandardOutput='true' name='Test died before reaching end of subtest' flowId='t/test-data/basic/test-class-moose-exit-before-tests/input.st']
-##teamcity[testFailed details='    1..1' message='not ok' name='Test died before reaching end of subtest' flowId='t/test-data/basic/test-class-moose-exit-before-tests/input.st']
-##teamcity[testFinished name='Test died before reaching end of subtest' flowId='t/test-data/basic/test-class-moose-exit-before-tests/input.st']
+##teamcity[testStarted captureStandardOutput='true' name='Test died' flowId='t/test-data/basic/test-class-moose-exit-before-tests/input.st']
+##teamcity[testFailed details='TAP::Formatter::TeamCity::Test::ExitFast->test_method_1()' message='not ok' name='Test died' flowId='t/test-data/basic/test-class-moose-exit-before-tests/input.st']
+##teamcity[testFinished name='Test died' flowId='t/test-data/basic/test-class-moose-exit-before-tests/input.st']
 ##teamcity[testSuiteFinished name='test_method_1' flowId='t/test-data/basic/test-class-moose-exit-before-tests/input.st']
 ##teamcity[testSuiteFinished name='TAP::Formatter::TeamCity::Test::ExitFast' flowId='t/test-data/basic/test-class-moose-exit-before-tests/input.st']
 ##teamcity[testSuiteFinished name='t/test-data/basic/test-class-moose-exit-before-tests/input.st' flowId='t/test-data/basic/test-class-moose-exit-before-tests/input.st']
