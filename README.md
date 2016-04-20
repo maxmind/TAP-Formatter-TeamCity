@@ -4,7 +4,7 @@ TAP::Formatter::TeamCity - Emit test results as TeamCity build messages
 
 # VERSION
 
-version 0.10
+version 0.11
 
 # SYNOPSIS
 
@@ -33,7 +33,7 @@ formatter simply treats skipped and TODO tests as ignored tests.
 
 # SEE ALSO
 
-[TeamCity::BuildMessages](https://metacpan.org/pod/TeamCity::BuildMessages)
+[TeamCity::Message](https://metacpan.org/pod/TeamCity::Message)
 
 # AUTHORS
 

@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.11     2016-04-20
+
 * This module now uses TeamCity::Message to generate messages, instead of
   doing this with private internal code.
 
