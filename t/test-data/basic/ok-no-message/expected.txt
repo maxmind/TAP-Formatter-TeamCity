@@ -1,4 +1,4 @@
-##teamcity[testSuiteStarted name='t/test-data/basic/ok-no-message/input.st' flowId='t/test-data/basic/ok-no-message/input.st']
-##teamcity[testStarted captureStandardOutput='true' name='NO TEST NAME' flowId='t/test-data/basic/ok-no-message/input.st']
-##teamcity[testFinished name='NO TEST NAME' flowId='t/test-data/basic/ok-no-message/input.st']
-##teamcity[testSuiteFinished name='t/test-data/basic/ok-no-message/input.st' flowId='t/test-data/basic/ok-no-message/input.st']
+##teamcity[testSuiteStarted flowId='t/test-data/basic/ok-no-message/input.st' name='t/test-data/basic/ok-no-message/input.st']
+##teamcity[testStarted captureStandardOutput='true' flowId='t/test-data/basic/ok-no-message/input.st' name='NO TEST NAME']
+##teamcity[testFinished flowId='t/test-data/basic/ok-no-message/input.st' name='NO TEST NAME']
+##teamcity[testSuiteFinished flowId='t/test-data/basic/ok-no-message/input.st' name='t/test-data/basic/ok-no-message/input.st']

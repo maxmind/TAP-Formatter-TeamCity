@@ -62,6 +62,6 @@ formatter simply treats skipped and TODO tests as ignored tests.
 
 =head1 SEE ALSO
 
-L<TeamCity::BuildMessages>
+L<TeamCity::Message>
 
 =cut

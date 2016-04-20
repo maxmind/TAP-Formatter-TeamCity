@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+* This module now uses TeamCity::Message to generate messages, instead of
+  doing this with private internal code.
+
+
 0.10     2016-03-15
 
 * Previously a lot of test output (especially diagnostics from failures) could
