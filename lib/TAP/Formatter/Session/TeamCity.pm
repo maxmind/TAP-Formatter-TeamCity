@@ -118,6 +118,7 @@ sub _handle_comment {
     my $result = shift;
 
     my $comment = $result->raw;
+
     # Always pass TC messages through immediately.
     if ( $comment =~ /^##teamcity\[/ ) {
         my $handle = $self->_tc_output_handle;
