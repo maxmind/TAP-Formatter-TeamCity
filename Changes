@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.12     2016-04-21
+
 * If any code prints a teamcity message directly, it passed through
   immediately by the formatter, rather than being buffered. This lets you
   issue progressMessage output from inside your test code.
