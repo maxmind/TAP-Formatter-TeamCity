@@ -121,7 +121,7 @@ sub _handle_comment {
     # Always pass TC messages through immediately.
     if ( $comment =~ /^##teamcity\[/ ) {
         my $handle = $self->_tc_output_handle;
-        print {$handle} $comment, "\n";
+        print {$handle} $comment, "\n" or die $!;
         return;
     }
 
