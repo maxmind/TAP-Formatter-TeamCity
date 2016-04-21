@@ -118,6 +118,13 @@ sub _handle_comment {
     my $result = shift;
 
     my $comment = $result->raw;
+    # Always pass TC messages through immediately.
+    if ( $comment =~ /^##teamcity\[/ ) {
+        my $handle = $self->_tc_output_handle;
+        print {$handle} $comment, "\n";
+        return;
+    }
+
     if ( $comment =~ /^\s*# Looks like you failed [0-9]+/ ) {
         $self->_test_finished;
         return;

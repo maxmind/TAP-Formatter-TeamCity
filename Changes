@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+* If any code prints a teamcity message directly, it passed through
+  immediately by the formatter, rather than being buffered. This lets you
+  issue progressMessage output from inside your test code.
+
+
 0.11     2016-04-20
 
 * This module now uses TeamCity::Message to generate messages, instead of
