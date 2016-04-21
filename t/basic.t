@@ -15,9 +15,16 @@ my %todo = (
     'test-name-matches-file' => 1,
 );
 
-test_formatter($_) for <t/test-data/basic/*>;
-test_formatter('t/test-data/basic');
-test_formatter( 't/test-data/basic', q{ in parallel} );
+my @tests
+    = @ARGV
+    ? map { m{^t/} ? $_ : "t/test-data/basic/$_" } @ARGV
+    : <t/test-data/basic/*>;
+test_formatter($_) for @tests;
+
+unless (@ARGV) {
+    test_formatter('t/test-data/basic');
+    test_formatter( 't/test-data/basic', q{ in parallel} );
+}
 
 done_testing;
 
