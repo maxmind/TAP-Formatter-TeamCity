@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+- Really pass teamcity messages through directly. When running tests in
+  parallel these messages were still being buffered.
+
+
 0.12     2016-04-21
 
 * If any code prints a teamcity message directly, it passed through
