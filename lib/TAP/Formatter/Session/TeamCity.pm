@@ -3,7 +3,7 @@ package TAP::Formatter::Session::TeamCity;
 use strict;
 use warnings;
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
 use TAP::Parser::Result::Test;
 use TeamCity::Message qw( tc_message );
