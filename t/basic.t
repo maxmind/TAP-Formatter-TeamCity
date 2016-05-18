@@ -41,7 +41,8 @@ sub test_formatter {
 
             my @t_files
                 = Path::Class::Rule->new->file->name(qr/\.st/)
-                ->all($test_dir);
+                ->all($test_dir)
+                or return;
 
             @t_files = grep { !$todo{ $_->dir->basename } } @t_files
                 if @t_files > 1;
