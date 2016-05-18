@@ -90,8 +90,7 @@ sub _handle_test {
             $self->_tc_message(
                 'testStarted',
                 {
-                    name                  => 'Skipped',
-                    captureStandardOutput => 'true'
+                    name => 'Skipped',
                 }
             );
             $self->_tc_message(
@@ -207,8 +206,7 @@ sub _handle_unknown {
         $self->_tc_message(
             'testStarted',
             {
-                name                  => 'Skipped',
-                captureStandardOutput => 'true'
+                name => 'Skipped',
             },
         );
         $self->_tc_message(
@@ -286,8 +284,7 @@ sub _handle_plan {
             $self->_tc_message(
                 'testStarted',
                 {
-                    name                  => 'Skipped',
-                    captureStandardOutput => 'true',
+                    name => 'Skipped',
                 },
             );
             $self->_tc_message(
@@ -310,8 +307,7 @@ sub _test_started {
     $self->_tc_message(
         'testStarted',
         {
-            name                  => $test_name,
-            captureStandardOutput => 'true',
+            name => $test_name,
         },
     );
     $self->_tc_last_test_name($test_name);
