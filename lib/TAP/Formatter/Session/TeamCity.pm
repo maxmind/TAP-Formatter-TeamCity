@@ -5,6 +5,7 @@ use warnings;
 
 our $VERSION = '0.14';
 
+use Test::More;
 use TAP::Parser::Result::Test;
 use TeamCity::Message qw( tc_message );
 
@@ -270,7 +271,7 @@ sub _handle_unknown {
     # Anything else might be random non-TAP output. We want to capture it and
     # make sure it's emitted in the TC results if it is.
     elsif ( $raw =~ /\S/ ) {
-        $self->_append_to_tc_suite_output_buffer($raw);
+        $self->_append_to_tc_suite_output_buffer("$raw\n");
     }
 }
 
@@ -346,16 +347,29 @@ sub _emit_teamcity_test_results {
         return;
     }
 
-    return if $result->is_ok;
-
-    $self->_tc_message(
-        'testFailed',
-        {
-            name    => $test_name,
-            message => 'not ok',
-            ( $buffer ? ( details => $buffer ) : () ),
-        },
-    );
+    if ( $result->is_ok ) {
+        return unless defined $buffer && length $buffer;
+        $self->_tc_message(
+            'testStdOut',
+            {
+                name => $test_name,
+                out  => $buffer,
+            },
+        );
+    }
+    else {
+        $self->_tc_message(
+            'testFailed',
+            {
+                name    => $test_name,
+                message => 'not ok',
+                (
+                    defined $buffer
+                        && length $buffer ? ( details => $buffer ) : ()
+                ),
+            },
+        );
+    }
 }
 
 sub _compute_test_name {
@@ -394,14 +408,28 @@ sub close_test {
     if ( $self->_tc_test_output_buffer
         =~ /^\QTests were run but no plan was declared and done_testing() was not seen.\E$/m
         ) {
+
         $self->_recover_from_catastrophic_death;
     }
     else {
         if ( !$self->_test_finished && $self->_tc_suite_output_buffer ) {
-            $self->_test_started( $self->_test_died_result_object );
-            $self->_tc_test_output_buffer( $self->_tc_suite_output_buffer );
-            $self->_tc_suite_output_buffer(q{});
-            $self->_test_finished;
+            if ( @{ $self->_tc_suite_name_stack } ) {
+                $self->_test_started( $self->_test_died_result_object );
+                $self->_tc_test_output_buffer(
+                    $self->_tc_suite_output_buffer );
+                $self->_tc_suite_output_buffer(q{});
+                $self->_test_finished;
+            }
+            else {
+                $self->_tc_message(
+                    'testStdOut',
+                    {
+                        name => $self->_tc_suite_name_stack->[-1],
+                        out  => $self->_tc_suite_output_buffer,
+                    },
+                );
+                $self->_tc_suite_output_buffer(q{});
+            }
         }
         {
             my @copy = @{ $self->_tc_suite_name_stack };
@@ -461,9 +489,21 @@ sub _finish_suite {
         $self->_tc_suite_output_buffer(q{});
         $self->_test_finished;
     }
+
     pop @{ $self->_tc_suite_name_stack };
+    my $buffer = $self->_tc_suite_output_buffer;
     $self->_tc_suite_output_buffer(q{});
     $self->_tc_last_suite_is_empty(0);
+
+    if ( defined $buffer && length $buffer ) {
+        $self->_tc_message(
+            'testStdOut',
+            {
+                name => $name,
+                out  => '_finish_suite: ' . $buffer,
+            },
+        );
+    }
     $self->_tc_message( 'testSuiteFinished', { name => $name } );
 
     return 1;
@@ -489,7 +529,6 @@ sub _append_to_tc_suite_output_buffer {
 }
 
 sub _test_died_result_object {
-
     # We used to try to figure out whether we died in a subtest or the top
     # level test for the .t file by looking at the size of the test suite
     # stack, but there's really no reliable way to figure that out with the
