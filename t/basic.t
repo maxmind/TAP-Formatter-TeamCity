@@ -64,6 +64,11 @@ sub test_formatter {
                 diag($stderr);
             }
 
+            diag('---- Start TC messages ----');
+            diag(@stdout) if $ENV{TEST_VERBOSE};
+            diag('---- End TC messages ----');
+            diag(q{});
+
             # we don't want to compare the test summary, but it has a different number
             # of lines depending on $is_ok so we just stop collecting lines once we
             # hit something that looks like that summary.
