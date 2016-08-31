@@ -255,7 +255,8 @@ sub _handle_unknown {
 
     # This is noise from Devel::Cover that we don't want to throw out
     # entirely, but also should not affect the test status either.
-    elsif ( $raw =~ qr/Deep recursion on subroutine "B::Deparse/ ) {
+    elsif ($raw =~ qr/Deep recursion on subroutine "B::Deparse/
+        || $raw =~ qr{unexpected OP_.+?B/Deparse} ) {
         $self->_tc_message(
             'message',
             { text => $raw },
