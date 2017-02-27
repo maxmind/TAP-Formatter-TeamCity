@@ -52,11 +52,21 @@ sub _initialize {
         $self->_tc_output_handle( \*STDOUT );
     }
 
-    $self->_start_suite( $self->name );
+    # We have a fake name so that we don't different test names per test runner.
+    # XXX - this is a giant hack.
+    $self->_start_suite( $self->_test_group_name );
 
     return $self;
 }
 ## use critic
+
+sub _test_group_name {
+    my $self = shift;
+
+    return $self->name unless $self->name =~ /run-test-class-moose-\d+.t/;
+
+    return 'test runner group';
+}
 
 sub _is_parallel {
     return $_[0]->formatter->jobs > 1;
@@ -517,7 +527,7 @@ sub _tc_message {
     my $force_stdout = shift;
 
     if ( ref $content ) {
-        $content->{flowId} ||= $self->name;
+        $content->{flowId} ||= $self->_test_group_name;
     }
 
     my $handle = $force_stdout ? \*STDOUT : $self->_tc_output_handle;

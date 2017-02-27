@@ -4,7 +4,7 @@ TAP::Formatter::TeamCity - Emit test results as TeamCity build messages
 
 # VERSION
 
-version 0.13
+version 0.14
 
 # SYNOPSIS
 
@@ -35,6 +35,10 @@ formatter simply treats skipped and TODO tests as ignored tests.
 
 [TeamCity::Message](https://metacpan.org/pod/TeamCity::Message)
 
+# SUPPORT
+
+Bugs may be submitted through [https://github.com/maxmind/TAP-Formatter-TeamCity/issues](https://github.com/maxmind/TAP-Formatter-TeamCity/issues).
+
 # AUTHORS
 
 - Jeffrey Ryan Thalhammer <jeff@imaginative-software.com>
@@ -44,10 +48,11 @@ formatter simply treats skipped and TODO tests as ignored tests.
 
 - Andy Jack <ajack@maxmind.com>
 - Dave Rolsky <drolsky@maxmind.com>
+- Mark Fowler <mark@twoshortplanks.com>
 
 # COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2009 - 2016 by MaxMind, Inc..
+This software is copyright (c) 2009 - 2017 by MaxMind, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
