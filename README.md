@@ -4,7 +4,7 @@ TAP::Formatter::TeamCity - Emit test results as TeamCity build messages
 
 # VERSION
 
-version 0.14
+version 0.15
 
 # SYNOPSIS
 
@@ -48,6 +48,7 @@ Bugs may be submitted through [https://github.com/maxmind/TAP-Formatter-TeamCity
 
 - Andy Jack <ajack@maxmind.com>
 - Dave Rolsky <drolsky@maxmind.com>
+- Greg Oschwald <goschwald@maxmind.com>
 - Mark Fowler <mark@twoshortplanks.com>
 
 # COPYRIGHT AND LICENSE

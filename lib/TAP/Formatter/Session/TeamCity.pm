@@ -3,7 +3,7 @@ package TAP::Formatter::Session::TeamCity;
 use strict;
 use warnings;
 
-our $VERSION = '0.14';
+our $VERSION = '0.15';
 
 use TAP::Parser::Result::Test;
 use TeamCity::Message qw( tc_message );
@@ -63,9 +63,11 @@ sub _initialize {
 sub _test_group_name {
     my $self = shift;
 
-    return $self->name unless $self->name =~ /run-test-class-moose-\d+.t/;
+    return 'test runner group' if $self->name =~ /run-test-class-moose-\d+.t/;
 
-    return 'test runner group';
+    return 'selenium test group' if $self->name =~ /run-test-class-moose-jsselenium-\d+.t/;
+
+    return $self->name;
 }
 
 sub _is_parallel {
